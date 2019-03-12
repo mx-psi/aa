@@ -9,7 +9,7 @@ documentclass: scrartcl
 
 ## 1. Implementar el algoritmo de gradiente descendente
 ## 2. Encontrar el mínimo de $E$ usando gradiente descendente
-### a) ¿Cuál es la expresión de $\grad E$?
+### a) ¿Cuál es la expresión de $\nabla E$?
 ### b) ¿Cuántas iteraciones tarda el algoritmo en obtener un valor inferior a $10^{-14}$?
 ### c) ¿En qué coordenadas se alcanza este valor?
 ## 3. Encontrar el mínimo de $f$ usando gradiente descendente
