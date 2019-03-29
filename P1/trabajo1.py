@@ -97,6 +97,7 @@ print('Valor de la función en el punto: {}'.format(E(E_minima)))
 
 # DISPLAY FIGURE
 def display_figure():
+  """Muestra figura 3D del punto mínimo hallado para el ejercicio 1"""
   x = np.linspace(-50, 50, 50)
   y = np.linspace(-50, 50, 50)
   X, Y = np.meshgrid(x, y)
@@ -147,6 +148,7 @@ initial_point = np.array([0.1,0.1])
 
 ## 1.3 a)
 
+# Obten resultados en cada iteración
 resEtaPeq    = np.empty((maxIter,))
 resEtaGrande = np.empty((maxIter,))
 
@@ -155,17 +157,20 @@ for eta, resultados in [(0.01, resEtaPeq), (0.1, resEtaGrande)]:
   iterations = 0
 
   while iterations < maxIter:
-    resultados[iterations] = f(w)
+    resultados[iterations] = f(w) # Guarda el resultado en la iteración actual
     w = w - eta*gradf(w)
     iterations += 1
 
 def compara_resultados():
+  """Muestra curvas de decrecimiento para GD con diferentes tasas de aprendizaje."""
+  print("Curvas de decrecimiento para el gradiente descendente")
   plt.plot(resEtaPeq,    'b-o', label="$\eta$ = 0.01")
   plt.plot(resEtaGrande, 'k-o', label="$\eta$ = 0.1" )
   plt.legend()
   plt.show()
 
 compara_resultados()
+espera()
 
 ## 1.3 b)
 
@@ -178,10 +183,13 @@ for initial in initial_points:
   w, _ = gradient_descent(initial, f, gradf, 0.01, 50)
   print("{}  {}  {: 1.5f}".format(initial, w, f(w)))
 
+# Halla mejor mínimo
 eta = 0.01
 f_minima, _ = gradient_descent(initial_point, f, gradf, eta, maxIter)
 
 def contour_plot(min_point):
+  """Gráfica de contorno del punto mínimo hallado para f y la curva que define
+  la región en la que están los mínimos globales."""
   x = np.arange(-2, 2, 0.01)
   y = np.arange(-2, 2, 0.01)
   xx, yy = np.meshgrid(x, y, sparse=True)
@@ -197,6 +205,7 @@ contour_plot(f_minima)
 ###############################################################################
 ###############################################################################
 ###############################################################################
+espera()
 print('\nEJERCICIO SOBRE REGRESION LINEAL\n')
 print('Ejercicio 1\n')
 
@@ -226,10 +235,12 @@ def readData(file_x, file_y):
 
 # Funcion para calcular el error
 def Err(x,y,w):
+  """Calcula el error para un modelo de regresión lineal"""
   wN = np.linalg.norm(x.dot(w) - y)**2
   return wN/len(x)
 
 def dErr(x,y,w):
+  """Calcula derivada de error para un modelo de regresión lineal."""
   return 2/len(x)*(x.T.dot(x.dot(w) - y))
 
 
@@ -314,7 +325,10 @@ def sgd(x, y, eta = 0.01, max_iter = 1000, batch_size = 32):
 
 # Pseudo-inversa
 def pseudoinverse(x,y):
-  return np.linalg.pinv(x).dot(y)
+  """Calcula el vector w a partir del método de la pseudo-inversa."""
+  u, s, v = np.linalg.svd(x)
+  d = np.diag([0 if np.allclose(p,0) else 1/p for p in s])
+  return v.T.dot(d).dot(d).dot(v).dot(x.T).dot(y)
 
 
 # Lectura de los datos de entrenamiento
@@ -333,6 +347,8 @@ print ('\nBondad del resultado para pseudo-inversa:')
 print ("  Ein:  ", Err(x,y,w_pinv))
 print ("  Eout: ", Err(x_test, y_test, w_pinv))
 
+espera()
+print("\nGráfica de resultados de SGD y pseudoinversa")
 
 scatter(x,y, [w_sgd, w_pinv], ["SGD", "Pinv"])
 espera()
@@ -370,10 +386,14 @@ def genera_hom():
 
 # EXPERIMENTO. Apartado a (y etiquetas de b)
 x,y = genera_hom()
+print("Puntos aleatorios generados")
 scatter(x)
+espera()
 
 # EXPERIMENTO. Apartado b representación
+print("Puntos etiquetados")
 scatter(x,y)
+espera()
 
 w = sgd(x,y)
 print("Bondad del resultado del experimento (1 ejecución)")
@@ -382,6 +402,7 @@ print("  Ein:  {}".format(Err(x,y,w)))
 
 # EXPERIMENTO. Apartado d) Experimento
 def experimento():
+  """Experimento del apartado d)"""
   x,y = genera_hom()
   x_test, y_test = genera_hom()
   w = sgd(x, y)
@@ -389,6 +410,8 @@ def experimento():
   Eout = Err(x_test, y_test, w)
   return np.array([Ein, Eout])
 
+
+# Haz 1000 ejecuciones del experimento
 Nexp = 1000
 errs = 0
 for _ in range(Nexp):
@@ -400,7 +423,11 @@ print("  Ein:  {}".format(Ein_medio))
 print("  Eout: {}".format(Eout_medio))
 espera()
 
-# BONUS
+###############################################################################
+###############################################################################
+###############################################################################
+###############################################################################
+print("BONUS")
 
 @to_numpy
 def hessianf(x,y):
@@ -439,7 +466,6 @@ def newton(initial_point, fun, grad_fun, hessian, eta, max_iter):
 
 
 # Representación de curva de decrecimiento
-print("BONUS")
 
 print("Representación de curva de decrecimiento del método de Newton")
 resEtaPeqNewton = np.apply_along_axis(f, 1, newton(np.array([0.1,0.1]), f, gradf, hessianf,  0.01, 50))

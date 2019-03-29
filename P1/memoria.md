@@ -249,12 +249,18 @@ La implementamos en la función `pseudoinverse`, que toma dos argumentos posicio
 - `x`: Datos en coordenadas homogéneas y
 - `y`: Etiquetas asociadas (-1 o 1),
 
-y cuyo código consiste simplemente en el cálculo de la pseudoinversa de `x` multiplicada por y:
+y cuyo código consiste en el cálculo de la pseudoinversa de `x` multiplicada por y a partir de la descomposición en valores singulares:
 
 ```python
 def pseudoinverse(x,y):
-  return np.linalg.pinv(x).dot(y)
+  u, s, v = np.linalg.svd(x)
+  d = np.diag([0 if np.allclose(p,0) else 1/p for p in s])
+  return v.T.dot(d).dot(d).dot(v).dot(x.T).dot(y)
 ```
+
+En primer lugar hallamos la descomposición $U, S, V = \operatorname{SVD}(X)$.
+A continuación, hallamos la pseudo-inversa de $S$ para lo que utilizamos la función `diag` para crear una matriz diagonal y `np.allclose` para ver si un elemento es (a efectos prácticos), cero.
+Finalmente devolvemos $V^tDDVX^tY$, que nos da el cálculo mediante la pseudoinversa.
 
 Para los datos leídos, guardamos el vector resultante en `w_pinv` (ver última sección de este apartado para la comparación de los métodos y sus resultados).
 
@@ -378,7 +384,7 @@ En el caso de este ejercicio mostramos el *scatter plot* con la siguiente llamad
 
 El resultado puede verse en la **Figura 3**.
 
-![Rectas obtenidas por regresión lineal para el dataset NIST junto con los datos.](img/2.1.png){width=75%}
+![Rectas obtenidas por regresión lineal para el dataset de números junto con los datos.](img/2.1.png){width=75%}
 
 ### Valorar la bondad del resultado
 
