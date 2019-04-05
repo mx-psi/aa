@@ -4,7 +4,7 @@ subtitle: Aprendizaje Automático
 author: Pablo Baeyens Fernández
 date: Curso 2018-2019
 documentclass: scrartcl
-toc: false
+toc: true
 toc-depth: 1
 toc-title: Índice
 header-includes:
@@ -12,7 +12,11 @@ header-includes:
 - \newcommand{\cov}{\operatorname{cov}}
 - \newcommand{\x}{\mathbf{x}}
 - \newcommand{\w}{\mathbf{w}}
+- \usepackage{etoolbox}
+- \AtBeginEnvironment{quote}{\itshape}
 ---
+
+\newpage
 
 # Pregunta 1
 
@@ -90,6 +94,8 @@ Es claramente un problema de **aprendizaje** supervisado, en el que podemos entr
 
 Este caso puede enfocarse como un problema de **diseño**, ya que tenemos un procedimiento algorítmico claro que resuelve el problema. Alternativamente podemos enfocarlo como un problema de aprendizaje por refuerzo en el que las acciones a tomar son el cambio de las luces del semáforo y la recompensa se da en función del tiempo medio de espera de los vehículos.
 
+\newpage
+
 # Pregunta 3
 
 > Construir un problema de aprendizaje desde datos para un problema de clasificación de
@@ -127,6 +133,8 @@ Utilizando esta descomposición tenemos que $$A = XX^T = (U DV^T) (U DV^T)^T = U
 donde hemos utilizado que $(A_1A_2)^T = A_2^TA_1^T$ y que la inversa de una matriz ortogonal es su traspuesta.
 
 Esta es una descomposición en valores singulares, ya que como $U$ es ortogonal, también lo será $U^T$.
+Además, $DD^T$ es diagonal por ser $D$ y $D^T$ diagonales: $$(DD^T)_{ij} = \sum_{k = 1}^m D_{ik}D_{jk} = \begin{cases}0 & \text{ si } i \neq j \text{ y } \\ D_{ii}^2 & \text{ si } i = j\end{cases}.$$
+
 Por tanto tenemos que los valores singulares de $A$ serán los valores de la diagonal de $DD^T$, es decir:
 los valores singulares de $A$ serán **los cuadrados de los valores singulares de $X$**.
 
@@ -215,6 +223,7 @@ Análogamente, si suponemos $y = -1$ tendremos $y \x^T\x < 0$ y por tanto nos ac
 
 Es decir, en ambos casos, si un vector $\x$ está mal clasificado, la actualización del vector de pesos lo mueve en la dirección adecuada para acercarse al signo correcto.
 
+\newpage
 
 # Pregunta 8
 
@@ -331,6 +340,8 @@ Sustituyendo el gradiente calculado anteriormente,
 $$\w_{n+1} = \begin{cases} \w_n -y_n \x_n & \text{ si } \operatorname{signo}(\w^T \x_n) \neq y_n \text{ o} \\ \w_n & \text{ si } \operatorname{signo}(\w^T \x_n) = y_n\end{cases},$$
 que es la expresión utilizada en el algoritmo PLA.
 
+\newpage
+
 # BONUS 1
 
 >  En regresión lineal con ruido en las etiquetas, el *error fuera de la muestra para una $h$ dada* puede expresarse como
@@ -359,6 +370,10 @@ Por último basta ver que en las dos primeras integrales podemos sacar los térm
 > $$\int (h(\x)-y)^2p(y|\x)\mathrm{d}y$$
 > ¿Que mide este término para una $h$ dada?.
 
+Este término mide, para un $\x$ fijo, el valor medio (esperanza) del error al cuadrado $(h(\x)  - y)^2$ respecto de la distribución condicionada de $y$ fijado $\x$ (cuya función de densidad es $p(y|\x)$).
+
+Es decir, para un cierto dato $\x$ tendremos cuál será el error medio del valor que predice $h$.
+
 ### Apartado c)
 
 > El objetivo que se persigue en Regression Lineal es encontrar la función $h \in \mathcal{H}$ que
@@ -367,17 +382,49 @@ Por último basta ver que en las dos primeras integrales podemos sacar los térm
 > $E_{\operatorname{out}}(h)$ está dada por
 > $$h^\ast(\x) = \mathbb{E}_y[y|\x] = \int y \cdot p(y|\x)\mathrm{d}y.$$
 
-TODO: qué
+En efecto, si partimos de la expresión obtenida en el apartado a) y simplificamos tenemos que
+\begin{align*}
+E_{\operatorname{out}}(h) & = \int \left( h(\x)^2\int p(y|\x)\mathrm{d}y - 2h(\x)\int y \cdot p(y | \x)\mathrm{d}y + \int y^2p(y|\x)\mathrm{d}y \right)p(\x)\mathrm{d}\x \\
+& = \int \left( h(\x)^2 - 2h(\x)h^\ast(\x) + \mathbb{E}_y[y^2|\x]\right)p(\x)\mathrm{d}\x
+\end{align*}
+donde hemos usado que la integral de la función de densidad condicionada vale 1 y la definición de esperanza y de $h^\ast$.
+
+A continuación completamos el cuadrado sumando y restando $h^\ast(\x)^2$
+$$E_{\operatorname{out}}(h) = \int \left( h(\x)^2 - 2h(\x)h^\ast(\x) + h^\ast(\x)^2 + \mathbb{E}_y[y^2|\x] - h^\ast(\x)^2\right)p(\x)\mathrm{d}\x,$$
+y tras agrupar el cuadrado y sustituir en el lado derecho por la definición de $h^\ast$:
+\begin{align*}
+E_{\operatorname{out}}(h) & = \int (h(\x) - h^\ast(\x))^2p(\x)\mathrm{d}\x & + & \int \left(\mathbb{E}_y[y^2|\x] - \mathbb{E}_y[y|\x]^2\right)p(\x)\mathrm{d}\x \\
+& = \mathbb{E}_{\x}[(h(\x) - h^\ast(\x))^2] & + & \mathbb{E}_{\x}[\operatorname{Var}_{y}[y|\x]],
+\end{align*}
+donde hemos utilizado la caracterización de la varianza en términos de los momentos de primer y segundo orden.
+
+El segundo sumando no depende de $h$ así que no afecta en la minimización.
+El primer sumando es siempre no negativo y mide la distancia entre una hipótesis y $h^\ast$.
+En $h^\ast$ se anula, luego $E_{\operatorname{out}}$ se minimizará en $h^\ast$.
+
+\newpage
 
 ### Apartado d)
 
 > ¿Cuál es el valor de $E_{\operatorname{out}}(h^\ast)$?
 
+Aplicando la fórmula obtenida en el apartado anterior
+$$E_{\operatorname{out}}(h^\ast) = \mathbb{E}_{\x}[(h^\ast(\x) - h^\ast(\x))^2] +  \mathbb{E}_{\x}[\operatorname{Var}_{y}[y|\x]] = \mathbb{E}_{\x}[\operatorname{Var}_{y}[y|\x]],$$
+con lo que el valor de $E_{\operatorname{out}}(h^\ast)$ es la varianza media de $y$ condicionada a $\x$.
+
 ### Apartado e)
 
 > Dar una interpretación, en términos de una muestra de datos, de la definición de la hipótesis óptima.
 
-# BONUS 2
+Con una muestra concreta de datos $\mathcal{D} = \{(\x_n,y_n)\}_{n = 1, \dots, N}$, aproximaríamos la hipótesis óptima dando a cada $\x$ la media de las $y_k$ tales que $\x_k = \x$, esto es, si dado $\x$ definimos $$I_\x := \{n \;:\; \x_n = \x\}$$ tendremos que podemos aproximar la hipótesis óptima con la función $$h_{\mathcal{D}}(\x) := \frac{1}{|I_\x|} \sum_{n \in I_\x} y_n.$$
+
+Bajo condiciones de independencia e idéntica distribución sobre $\mathcal{D}$ tendremos que esta hipótesis convergerá a $h^\ast$ cuando $N \to \infty$, dando así una interpretación a $h^\ast$ en términos de $\mathcal{D}$.
+
+
+
+*****
+
+**BONUS 2**
 
 > Una modificación del algoritmo perceptron denominada ADALINE, incorpora en la regla
 > de adaptación una poderación sobre la cantidad de movimiento necesaria. En PLA se
@@ -388,3 +435,4 @@ TODO: qué
 > Argumentar que la regla de adaptación de ADALINE es equivalente a gradiente descendente estocástico (SGD)
 > sobre $\frac{1}{N}\sum_{n=1}^N E_n(\w)$.
 
+**Nota**: *No he hecho el ejercicio de Bonus 2*.
