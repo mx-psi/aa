@@ -35,7 +35,7 @@ print('Ejercicio 1\n')
 @to_numpy
 def E(u, v):
   """Función E de ejercicio 1.2"""
-  return (u**2 * np.exp(v) - 2 * v**2 * np.exp(-u))**2
+  return (u**2*np.exp(v) - 2*v**2*np.exp(-u))**2
 
 
 def dEu(u, v):
@@ -61,12 +61,8 @@ def gradE(u, v):
 ###########################
 
 
-def gradient_descent(initial_point,
-                     fun,
-                     grad_fun,
-                     eta,
-                     max_iter,
-                     error2get = -math.inf):
+def gradient_descent(
+    initial_point, fun, grad_fun, eta, max_iter, error2get = -math.inf):
   """ Aproxima el mínimo de una función mediante
     el método de gradiente descendiente.
     Argumentos posicionales:
@@ -90,7 +86,7 @@ def gradient_descent(initial_point,
   iterations = 0
   
   while fun(w) > error2get and iterations < max_iter:
-    w = w - eta * grad_fun(w)
+    w = w - eta*grad_fun(w)
     iterations += 1
   
   return w, iterations
@@ -104,8 +100,8 @@ eta = 0.01
 maxIter = 10000000000
 error2get = 1e-14
 initial_point = np.array([1.0, 1.0])
-E_minima, it = gradient_descent(initial_point, E, gradE, eta, maxIter,
-                                error2get)
+E_minima, it = gradient_descent(
+  initial_point, E, gradE, eta, maxIter, error2get)
 
 print('Numero de iteraciones: {}'.format(it))
 print('Coordenadas obtenidas: {}'.format(E_minima))
@@ -121,25 +117,26 @@ def display_figure():
   Z = E([X, Y])  # E_w([X, Y])
   fig = plt.figure()
   ax = Axes3D(fig)
-  surf = ax.plot_surface(X,
-                         Y,
-                         Z,
-                         edgecolor = 'none',
-                         rstride = 1,
-                         cstride = 1,
-                         cmap = 'jet',
-                         alpha = 0.8)
+  surf = ax.plot_surface(
+    X,
+    Y,
+    Z,
+    edgecolor = 'none',
+    rstride = 1,
+    cstride = 1,
+    cmap = 'jet',
+    alpha = 0.8)
   min_point = np.array([E_minima[0], E_minima[1]])
   min_point_ = min_point[:, np.newaxis]
-  ax.plot(min_point_[0],
-          min_point_[1],
-          E([min_point_[0], min_point_[1]]),
-          'r*',
-          markersize = 5)
+  ax.plot(
+    min_point_[0],
+    min_point_[1],
+    E([min_point_[0], min_point_[1]]),
+    'r*',
+    markersize = 5)
   ax.set(
-      title =
-      'Ejercicio 1.2. Función sobre la que se calcula el descenso de gradiente'
-  )
+    title =
+    'Ejercicio 1.2. Función sobre la que se calcula el descenso de gradiente')
   ax.set_xlabel('u')
   ax.set_ylabel('v')
   ax.set_zlabel('E(u,v)')
@@ -157,17 +154,17 @@ espera()
 @to_numpy
 def f(x, y):
   """Función f de ejercicio 1.3"""
-  return x**2 + 2 * y**2 + 2 * np.sin(2 * np.pi * x) * np.sin(2 * np.pi * y)
+  return x**2 + 2*y**2 + 2*np.sin(2*np.pi*x)*np.sin(2*np.pi*y)
 
 
 def dfx(x, y):
   """Derivada parcial de f respecto de x."""
-  return 2*x + 4 * np.pi * np.cos(2 * np.pi * x) * np.sin(2 * np.pi * y)
+  return 2*x + 4*np.pi*np.cos(2*np.pi*x)*np.sin(2*np.pi*y)
 
 
 def dfy(x, y):
   """Derivada parcial de f respecto de y."""
-  return 4*y + 4 * np.pi * np.sin(2 * np.pi * x) * np.cos(2 * np.pi * y)
+  return 4*y + 4*np.pi*np.sin(2*np.pi*x)*np.cos(2*np.pi*y)
 
 
 @to_numpy
@@ -192,7 +189,7 @@ for eta, resultados in [(0.01, resEtaPeq), (0.1, resEtaGrande)]:
   while iterations < maxIter:
     # Guarda el resultado en la iteración actual
     resultados[iterations] = f(w)
-    w = w - eta * gradf(w)
+    w = w - eta*gradf(w)
     iterations += 1
 
 
@@ -232,7 +229,7 @@ def contour_plot(min_point):
   xx, yy = np.meshgrid(x, y, sparse = True)
   z = f([xx, yy])
   h = plt.contourf(x, y, z, cmap = "plasma")
-  plt.contour(x, y, xx**2 + 2 * yy**2 - 2, [0])
+  plt.contour(x, y, xx**2 + 2*yy**2 - 2, [0])
   plt.plot(min_point[0], min_point[1], 'r*', markersize = 5)
   plt.show()
 
@@ -280,12 +277,12 @@ def readData(file_x, file_y):
 def Err(x, y, w):
   """Calcula el error para un modelo de regresión lineal"""
   wN = np.linalg.norm(x.dot(w) - y)**2
-  return wN / len(x)
+  return wN/len(x)
 
 
 def dErr(x, y, w):
   """Calcula derivada de error para un modelo de regresión lineal."""
-  return 2 / len(x) * (x.T.dot(x.dot(w) - y))
+  return 2/len(x)*(x.T.dot(x.dot(w) - y))
 
 
 def scatter(x, y = None, ws = None, labels_ws = None):
@@ -314,19 +311,20 @@ def scatter(x, y = None, ws = None, labels_ws = None):
       class_members = x[y == cls]
       
       # Representa en scatter plot
-      ax.scatter(class_members[:, 1],
-                 class_members[:, 2],
-                 c = class_colors[cls],
-                 label = name)
+      ax.scatter(
+        class_members[:, 1],
+        class_members[:, 2],
+        c = class_colors[cls],
+        label = name)
   
   if ws is not None:
     x = np.array([xmin, xmax])
     if labels_ws is None:
       for w in ws:
-        ax.plot(x, (-w[1] * x - w[0]) / w[2])
+        ax.plot(x, (-w[1]*x - w[0])/w[2])
     else:
       for w, name in zip(ws, labels_ws):
-        ax.plot(x, (-w[1] * x - w[0]) / w[2], label = name)
+        ax.plot(x, (-w[1]*x - w[0])/w[2], label = name)
   
   if y is not None or ws is not None:
     ax.legend()
@@ -357,7 +355,7 @@ def sgd(x, y, eta = 0.01, max_iter = 1000, batch_size = 32):
     # Toma índices
     idx = idxs[batch_start:batch_start + batch_size]
     
-    w = w - eta * dErr(x[idx, :], y[idx], w)
+    w = w - eta*dErr(x[idx, :], y[idx], w)
     iterations += 1
     
     # Actualiza el comienzo del batch
@@ -371,7 +369,7 @@ def sgd(x, y, eta = 0.01, max_iter = 1000, batch_size = 32):
 def pseudoinverse(x, y):
   """Calcula el vector w a partir del método de la pseudo-inversa."""
   u, s, v = np.linalg.svd(x)
-  d = np.diag([0 if np.allclose(p, 0) else 1 / p for p in s])
+  d = np.diag([0 if np.allclose(p, 0) else 1/p for p in s])
   return v.T.dot(d).dot(d).dot(v).dot(x.T).dot(y)
 
 
@@ -464,7 +462,7 @@ Nexp = 1000
 errs = 0
 for _ in range(Nexp):
   errs = errs + experimento()
-Ein_medio, Eout_medio = errs / Nexp
+Ein_medio, Eout_medio = errs/Nexp
 
 print("Bondad del resultado del experimento ({} ejecuciones)".format(Nexp))
 print("  Ein:  {}".format(Ein_medio))
@@ -480,12 +478,13 @@ print("BONUS")
 
 @to_numpy
 def hessianf(x, y):
-  return np.array([
-      2 - 8 * np.pi**2 * np.sin(2 * np.pi * x) * np.sin(2 * np.pi * y),
-      8 * np.pi**2 * np.cos(2 * np.pi * x) * np.cos(2 * np.pi * y),
-      8 * np.pi**2 * np.cos(2 * np.pi * x) * np.cos(2 * np.pi * y),
-      4 - 8 * np.pi**2 * np.sin(2 * np.pi * x) * np.sin(2 * np.pi * y)
-  ]).reshape((2, 2))
+  return np.array(
+    [
+      2 - 8*np.pi**2*np.sin(2*np.pi*x)*np.sin(2*np.pi*y),
+      8*np.pi**2*np.cos(2*np.pi*x)*np.cos(2*np.pi*y),
+      8*np.pi**2*np.cos(2*np.pi*x)*np.cos(2*np.pi*y),
+      4 - 8*np.pi**2*np.sin(2*np.pi*x)*np.sin(2*np.pi*y)
+    ]).reshape((2, 2))
 
 
 def newton(initial_point, fun, grad_fun, hessian, eta, max_iter):
@@ -507,7 +506,7 @@ def newton(initial_point, fun, grad_fun, hessian, eta, max_iter):
   iterations = 0
   
   while iterations < max_iter:
-    w = w - eta * np.linalg.inv(hessian(w)).dot(grad_fun(w))
+    w = w - eta*np.linalg.inv(hessian(w)).dot(grad_fun(w))
     w_list.append(w)
     iterations += 1
   
@@ -518,9 +517,9 @@ def newton(initial_point, fun, grad_fun, hessian, eta, max_iter):
 
 print("Representación de curva de decrecimiento del método de Newton")
 resEtaPeqNewton = np.apply_along_axis(
-    f, 1, newton(np.array([0.1, 0.1]), f, gradf, hessianf, 0.01, 50))
+  f, 1, newton(np.array([0.1, 0.1]), f, gradf, hessianf, 0.01, 50))
 resEtaGrandeNewton = np.apply_along_axis(
-    f, 1, newton(np.array([0.1, 0.1]), f, gradf, hessianf, 0.1, 50))
+  f, 1, newton(np.array([0.1, 0.1]), f, gradf, hessianf, 0.1, 50))
 
 plt.plot(resEtaPeq, 'b-o', label = r"GD, $\eta$ = 0.01")
 plt.plot(resEtaGrande, 'k-o', label = r"GD, $\eta$ = 0.1")
@@ -533,12 +532,14 @@ espera()
 
 print("Ejecución del método de Newton para diversos puntos iniciales:\n")
 # Cálculo de puntos del método de Newton
-initial_points = zip(["0.1, 0.1", "1,1", "-0.5, -0.5", "-1, -1"],
-                     map(np.array, [[0.1, 0.1], [1, 1], [-.5, -.5], [-1, -1]]))
+initial_points = zip(
+  ["0.1, 0.1", "1,1", "-0.5, -0.5", "-1, -1"],
+  map(np.array, [[0.1, 0.1], [1, 1], [-.5, -.5], [-1, -1]]))
 print("Punto inicial, punto final, valor final, gradiente final:")
 steps_for = {}
 for label, initial in initial_points:
   points = newton(initial, f, gradf, hessianf, 0.01, 800)
   steps_for[label] = points
-  print("{:>10}".format(label), points[-1, :],
-        "{: 1.5f}".format(f(points[-1, :])), gradf(points[-1, :]))
+  print(
+    "{:>10}".format(label), points[-1, :], "{: 1.5f}".format(f(points[-1, :])),
+    gradf(points[-1, :]))

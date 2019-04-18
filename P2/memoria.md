@@ -107,17 +107,18 @@ for i in range(N):
 
 Para la representación utilizamos la función `scatter`, apoyándonos en el vector de la recta `vector_recta` calculado anteriormente,
 ```python
-scatter(x,
-        y,
-        ws = [vector_recta],
-        labels_ws = ["Frontera"],
-        title = "Puntos etiquetados en función de recta aleatoria")
+scatter(
+  x,
+  y,
+  ws = [vector_recta],
+  labels_ws = ["Frontera"],
+  title = "Puntos etiquetados en función de recta aleatoria")
 ```
 
 El resultado puede verse en la figura 3.
 Como vemos todos los puntos están bien clasificados; los que quedan por encima de la recta tienen una etiqueta mientras que el resto tienen la etiqueta contraria.
 
-![Puntos clasificados respecto a una recta aleatoria](img/1.2.png){width=80%}
+![Puntos clasificados respecto a una recta aleatoria](img/1.2.a.png){width=80%}
 
 ### b) Modifique de forma aleatoria un 10 % etiquetas positivas y otro 10 % de negativas y guarde los puntos con sus nuevas etiquetas. Dibuje de nuevo la gráfica anterior. (Ahora hay puntos mal clasificados respecto de la recta)
 
@@ -127,7 +128,37 @@ Para cada etiqueta `label` de entre $\{-1,1\}$ tomamos el conjunto de índices d
 ```python
 y_lab = np.nonzero(y == label)[0]
 ```
-A continuación tomamos un 10% aleatorio de entre estos 
+A continuación tomamos un 10% aleatorio de entre estos (redondeando hacia arriba), haciendo uso de la función `np.random.choice`,
+```python3
+y_rand = np.random.choice(y_lab, math.ceil(0.1*len(y_lab)), replace = False)
+```
+y cambiamos el signo de las etiquetas en estos índices,
+```python
+y_noise[y_rand] = -y_noise[y_rand]
+```
+
+El código completo queda
+```python
+for label in {-1, 1}:
+  y_lab = np.nonzero(y == label)[0]
+  y_rand = np.random.choice(y_lab, math.ceil(0.1*len(y_lab)), replace = False)
+  y_noise[y_rand] = -y_noise[y_rand]
+```
+
+Finalmente hacemos la representación con las nuevas etiquetas con `scatter`
+```python
+scatter(
+  x,
+  y_noise,
+  ws = [vector_recta],
+  labels_ws = ["Frontera"],
+  title = "Puntos etiquetados con recta aleatoria (con ruido)")
+```
+
+El resultado puede verse en la figura 4.
+Como vemos en este caso hay algunos puntos, tanto en la parte superior como en la parte inferior de la recta que no están clasificados correctamente.
+
+![Puntos clasificados respecto a una recta aleatoria con ruido](img/1.2.b.png){width=80%}
 
 ## 3. Comparación de clasificadores
 

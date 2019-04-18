@@ -57,10 +57,11 @@ def parte1(iris):
     class_members = plot_data[iris.target == cls]
     
     # Representa en scatter plot
-    ax.scatter(class_members[:, 0],
-               class_members[:, 1],
-               c = class_colors[cls],
-               label = name)
+    ax.scatter(
+      class_members[:, 0],
+      class_members[:, 1],
+      c = class_colors[cls],
+      label = name)
   
   ax.legend()  # leyenda
   
@@ -96,7 +97,7 @@ def parte2(iris):
     perm_classY = iris.target[iris.target == cls].reshape((-1, 1))
     
     # Tomamos un 80% de los datos para training
-    N = round(len(classX) * 0.8)
+    N = round(len(classX)*0.8)
     
     # Añade 80%-20% a train y test
     trainX = np.vstack((trainX, perm_classX[:N]))
@@ -104,17 +105,19 @@ def parte2(iris):
     trainY = np.vstack((trainY, perm_classY[:N]))
     testY = np.vstack((testY, perm_classY[N:]))
   
-  print("trainX y trainY (concatenados):\n{}\n".format(
+  print(
+    "trainX y trainY (concatenados):\n{}\n".format(
       np.hstack((trainX, trainY))))
-  print("testX y testY (concatenados):\n{}\n".format(np.hstack(
-      (testX, testY))))
+  print(
+    "testX y testY (concatenados):\n{}\n".format(np.hstack((testX, testY))))
   
   # Cuenta el número en cada clase
   print("Cantidad de cada clase:")
   for cls, name in enumerate(iris.target_names):
     train_number = np.count_nonzero(trainY == cls)
     test_number = np.count_nonzero(testY == cls)
-    print(" {}: \n  # en training: {}\n  # en test: {}".format(
+    print(
+      " {}: \n  # en training: {}\n  # en test: {}".format(
         name, train_number, test_number))
   espera()
 
@@ -126,7 +129,7 @@ def parte3():
   print("=======")
   
   # Obtener 100 valores equiespaciados entre 0 y 2π
-  x = np.linspace(0, 2 * np.pi, num = 100)
+  x = np.linspace(0, 2*np.pi, num = 100)
   
   # Obtener el valor en x para seno, coseno y su suma
   sin_values = np.sin(x)
@@ -135,18 +138,18 @@ def parte3():
   
   # Visualizar las tres curvas simultáneamente en el mismo plot
   plt.plot(
-      x,
-      sin_values,
-      'k--',  # sin
-      x,
-      cos_values,
-      'b--',  # cos
-      x,
-      sc_values,
-      'r--')  # sin + cos
+    x,
+    sin_values,
+    'k--',  # sin
+    x,
+    cos_values,
+    'b--',  # cos
+    x,
+    sc_values,
+    'r--')  # sin + cos
   
   print(
-      "Muestra seno (negro), coseno (azul) y suma (rojo) (en ventana aparte)")
+    "Muestra seno (negro), coseno (azul) y suma (rojo) (en ventana aparte)")
   plt.show()
 
 
