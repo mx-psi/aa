@@ -11,32 +11,32 @@ np.random.seed(2)
 
 
 def simula_unif(N, dim, rango):
-    return np.random.uniform(rango[0], rango[1], (N, dim))
+  return np.random.uniform(rango[0], rango[1], (N, dim))
 
 
 def simula_gaus(N, dim, sigma):
-    media = 0
-    out = np.zeros((N, dim), np.float64)
-    for i in range(N):
-        # Para cada columna dim se emplea un sigma determinado. Es decir, para
-        # la primera columna (eje X) se usará una N(0,sqrt(sigma[0]))
-        # y para la segunda (eje Y) N(0,sqrt(sigma[1]))
-        out[i, :] = np.random.normal(loc=media, scale=np.sqrt(sigma), size=dim)
-
-    return out
+  media = 0
+  out = np.zeros((N, dim), np.float64)
+  for i in range(N):
+    # Para cada columna dim se emplea un sigma determinado. Es decir, para
+    # la primera columna (eje X) se usará una N(0,sqrt(sigma[0]))
+    # y para la segunda (eje Y) N(0,sqrt(sigma[1]))
+    out[i, :] = np.random.normal(loc=media, scale=np.sqrt(sigma), size=dim)
+  
+  return out
 
 
 def simula_recta(intervalo):
-    points = np.random.uniform(intervalo[0], intervalo[1], size=(2, 2))
-    x1 = points[0, 0]
-    x2 = points[1, 0]
-    y1 = points[0, 1]
-    y2 = points[1, 1]
-    # y = a*x + b
-    a = (y2 - y1) / (x2 - x1)  # Calculo de la pendiente.
-    b = y1 - a * x1  # Calculo del termino independiente.
-
-    return a, b
+  points = np.random.uniform(intervalo[0], intervalo[1], size=(2, 2))
+  x1 = points[0, 0]
+  x2 = points[1, 0]
+  y1 = points[0, 1]
+  y2 = points[1, 1]
+  # y = a*x + b
+  a = (y2 - y1) / (x2 - x1)  # Calculo de la pendiente.
+  b = y1 - a * x1  # Calculo del termino independiente.
+  
+  return a, b
 
 
 # EJERCICIO 1.1: Dibujar una gráfica con la nube de puntos de salida
@@ -44,7 +44,7 @@ def simula_recta(intervalo):
 
 
 def scatter(x, y=None, ws=None, labels_ws=None, title=None):
-    """Representa scatter plot.
+  """Representa scatter plot.
     Puede llamarse de 4 formas diferentes
 
     1. scatter(x)          muestra `x` en un scatter plot
@@ -53,41 +53,41 @@ def scatter(x, y=None, ws=None, labels_ws=None, title=None):
     4. scatter(x,y,ws,lab) muestra `x` con etiquetas `y` y rectas `ws`,
                            etiquetadas por `lab`
     """
-
-    _, ax = plt.subplots()
-    xmin, xmax = np.min(x[:, 0]), np.max(x[:, 0])
-    ax.set_xlim(xmin, xmax)
-    ax.set_ylim(np.min(x[:, 1]), np.max(x[:, 1]))
-
-    if y is None:
-        ax.scatter(x[:, 0], x[:, 1])
+  
+  _, ax = plt.subplots()
+  xmin, xmax = np.min(x[:, 0]), np.max(x[:, 0])
+  ax.set_xlim(xmin, xmax)
+  ax.set_ylim(np.min(x[:, 1]), np.max(x[:, 1]))
+  
+  if y is None:
+    ax.scatter(x[:, 0], x[:, 1])
+  else:
+    class_colors = {-1: 'green', 1: 'blue'}
+    # Para cada clase:
+    for cls, name in [(-1, "Clase -1"), (1, "Clase 1")]:
+      # Obten los miembros de la clase
+      class_members = x[y == cls]
+      
+      # Representa en scatter plot
+      ax.scatter(class_members[:, 0],
+                 class_members[:, 1],
+                 c=class_colors[cls],
+                 label=name)
+  
+  if ws is not None:
+    x = np.array([xmin, xmax])
+    if labels_ws is None:
+      for w in ws:
+        ax.plot(x, (-w[1] * x - w[0]) / w[2])
     else:
-        class_colors = {-1: 'green', 1: 'blue'}
-        # Para cada clase:
-        for cls, name in [(-1, "Clase -1"), (1, "Clase 1")]:
-            # Obten los miembros de la clase
-            class_members = x[y == cls]
-
-            # Representa en scatter plot
-            ax.scatter(class_members[:, 0],
-                       class_members[:, 1],
-                       c=class_colors[cls],
-                       label=name)
-
-    if ws is not None:
-        x = np.array([xmin, xmax])
-        if labels_ws is None:
-            for w in ws:
-                ax.plot(x, (-w[1] * x - w[0]) / w[2])
-        else:
-            for w, name in zip(ws, labels_ws):
-                ax.plot(x, (-w[1] * x - w[0]) / w[2], label=name)
-
-    if y is not None or ws is not None:
-        ax.legend()
-    if title is not None:
-        plt.title(title)
-    plt.show()
+      for w, name in zip(ws, labels_ws):
+        ax.plot(x, (-w[1] * x - w[0]) / w[2], label=name)
+  
+  if y is not None or ws is not None:
+    ax.legend()
+  if title is not None:
+    plt.title(title)
+  plt.show()
 
 
 # Apartado a)
@@ -112,13 +112,13 @@ input("\n--- Pulsar tecla para continuar ---\n")
 
 # La funcion np.sign(0) da 0, lo que nos puede dar problemas
 def signo(x):
-    if x >= 0:
-        return 1
-    return -1
+  if x >= 0:
+    return 1
+  return -1
 
 
 def f(x, y, a, b):
-    return signo(y - a * x - b)
+  return signo(y - a * x - b)
 
 
 # CODIGO DEL ESTUDIANTE
@@ -129,7 +129,7 @@ x = simula_unif(N, 2, intervalo)
 
 y = np.empty((N, ))
 for i in range(N):
-    y[i] = f(x[i, 0], x[i, 1], a, b)
+  y[i] = f(x[i, 0], x[i, 1], a, b)
 
 vector_recta = np.array([b, a, -1])
 
@@ -147,9 +147,9 @@ y_noise = y.copy()
 
 # Modifica un 10% aleatorio de cada etiqueta
 for label in [-1, 1]:
-    y_lab = np.nonzero(y == label)[0]
-    y_rand = np.random.choice(y_lab, len(y_lab) // 10, replace=False)
-    y_noise[y_rand] = -y_noise[y_rand]
+  y_lab = np.nonzero(y == label)[0]
+  y_rand = np.random.choice(y_lab, len(y_lab) // 10, replace=False)
+  y_noise[y_rand] = -y_noise[y_rand]
 
 scatter(x,
         y_noise,
@@ -176,65 +176,65 @@ def plot_datos_cuad(X,
                     title='Point cloud plot',
                     xaxis='x axis',
                     yaxis='y axis'):
-    # Preparar datos
-    min_xy = X.min(axis=0)
-    max_xy = X.max(axis=0)
-    border_xy = (max_xy - min_xy) * 0.01
-
-    # Generar grid de predicciones
-    xx, yy = np.mgrid[min_xy[0] - border_xy[0]:max_xy[0] + border_xy[0] +
-                      0.001:border_xy[0], min_xy[1] - border_xy[1]:max_xy[1] +
-                      border_xy[1] + 0.001:border_xy[1]]
-    grid = np.c_[xx.ravel(), yy.ravel(), np.ones_like(xx).ravel()]
-    pred_y = fz(grid)
-    # pred_y[(pred_y>-1) & (pred_y<1)]
-    pred_y = np.clip(pred_y, -1, 1).reshape(xx.shape)
-
-    # Plot
-    f, ax = plt.subplots(figsize=(8, 6))
-    contour = ax.contourf(xx, yy, pred_y, 50, cmap='RdBu', vmin=-1, vmax=1)
-    ax_c = f.colorbar(contour)
-    ax_c.set_label('$f(x, y)$')
-    ax_c.set_ticks([-1, -0.75, -0.5, -0.25, 0, 0.25, 0.5, 0.75, 1])
-    ax.scatter(X[:, 0],
-               X[:, 1],
-               c=y,
-               s=50,
-               linewidth=2,
-               cmap="RdYlBu",
-               edgecolor='white')
-
-    XX, YY = np.meshgrid(
-        np.linspace(round(min(min_xy)), round(max(max_xy)), X.shape[0]),
-        np.linspace(round(min(min_xy)), round(max(max_xy)), X.shape[0]))
-    positions = np.vstack([XX.ravel(), YY.ravel()])
-    ax.contour(XX,
-               YY,
-               fz(positions.T).reshape(X.shape[0], X.shape[0]), [0],
-               colors='black')
-
-    ax.set(xlim=(min_xy[0] - border_xy[0], max_xy[0] + border_xy[0]),
-           ylim=(min_xy[1] - border_xy[1], max_xy[1] + border_xy[1]),
-           xlabel=xaxis,
-           ylabel=yaxis)
-    plt.title(title)
-    plt.show()
+  # Preparar datos
+  min_xy = X.min(axis=0)
+  max_xy = X.max(axis=0)
+  border_xy = (max_xy - min_xy) * 0.01
+  
+  # Generar grid de predicciones
+  xx, yy = np.mgrid[min_xy[0] - border_xy[0]:max_xy[0] + border_xy[0] +
+                    0.001:border_xy[0], min_xy[1] - border_xy[1]:max_xy[1] +
+                    border_xy[1] + 0.001:border_xy[1]]
+  grid = np.c_[xx.ravel(), yy.ravel(), np.ones_like(xx).ravel()]
+  pred_y = fz(grid)
+  # pred_y[(pred_y>-1) & (pred_y<1)]
+  pred_y = np.clip(pred_y, -1, 1).reshape(xx.shape)
+  
+  # Plot
+  f, ax = plt.subplots(figsize=(8, 6))
+  contour = ax.contourf(xx, yy, pred_y, 50, cmap='RdBu', vmin=-1, vmax=1)
+  ax_c = f.colorbar(contour)
+  ax_c.set_label('$f(x, y)$')
+  ax_c.set_ticks([-1, -0.75, -0.5, -0.25, 0, 0.25, 0.5, 0.75, 1])
+  ax.scatter(X[:, 0],
+             X[:, 1],
+             c=y,
+             s=50,
+             linewidth=2,
+             cmap="RdYlBu",
+             edgecolor='white')
+  
+  XX, YY = np.meshgrid(
+      np.linspace(round(min(min_xy)), round(max(max_xy)), X.shape[0]),
+      np.linspace(round(min(min_xy)), round(max(max_xy)), X.shape[0]))
+  positions = np.vstack([XX.ravel(), YY.ravel()])
+  ax.contour(XX,
+             YY,
+             fz(positions.T).reshape(X.shape[0], X.shape[0]), [0],
+             colors='black')
+  
+  ax.set(xlim=(min_xy[0] - border_xy[0], max_xy[0] + border_xy[0]),
+         ylim=(min_xy[1] - border_xy[1], max_xy[1] + border_xy[1]),
+         xlabel=xaxis,
+         ylabel=yaxis)
+  plt.title(title)
+  plt.show()
 
 
 # CODIGO DEL ESTUDIANTE
 
 
 def getProp(datos, labels, clasificador):
-    """Obtiene la proporción de puntos correctamente clasificados
+  """Obtiene la proporción de puntos correctamente clasificados
     por un clasificador dado.
     Argumentos posicionales:
     - datos: datos,
     - labels: etiquetas,
     - clasificador: Clasificador"""
-
-    # Los campos no negativos indican clasificación correcta
-    signos = labels * clasificador(datos)
-    return len(signos[signos >= 0]) / len(labels)
+  
+  # Los campos no negativos indican clasificación correcta
+  signos = labels * clasificador(datos)
+  return len(signos[signos >= 0]) / len(labels)
 
 
 # Lista de clasificadores con su título
@@ -248,9 +248,9 @@ clasificadores = [
 
 # Representa y calcula el número bien clasificado para cada tipo
 for clasificador, title in clasificadores:
-    plot_datos_cuad(x, y_noise, clasificador, title=title)
-    print("Proporción correcta para '{}': {}".format(
-        title, getProp(x, y_noise, clasificador)))
+  plot_datos_cuad(x, y_noise, clasificador, title=title)
+  print("Proporción correcta para '{}': {}".format(
+      title, getProp(x, y_noise, clasificador)))
 
 input("\n--- Pulsar tecla para continuar ---\n")
 
@@ -262,37 +262,37 @@ input("\n--- Pulsar tecla para continuar ---\n")
 
 
 def ajusta_PLA(datos, label, max_iter, vini):
-    """Calcula el hiperplano solución al problema de clasificación binaria.
+  """Calcula el hiperplano solución al problema de clasificación binaria.
     Argumentos posicionales:
     - datos: matriz de datos,
     - label: Etiquetas,
     - max_iter: Número máximo de iteraciones
     - vini: Valor inicial"""
-
-    w = vini.copy()
-    i = 0
-    N = len(label)
-    no_changes = True
-
-    while i <= max_iter:
-        # El índice actual
-        j = i % N
-
-        # Si un dato está clasificado incorrectamente
-        if signo(w.dot(datos[j, :])) != label[j]:
-            w = w + label[j] * datos[j]  # Actualiza el vector
-            no_changes = False  # Indica que ha habido cambios
-
-        # Si hemos pasado por todos los datos
-        if j == N - 1:
-            if no_changes:  # Si no ha habido cambios, para
-                break
-            else:  # Si los ha habido, reinicia
-                no_changes = False
-
-        i += 1
-
-    return w
+  
+  w = vini.copy()
+  i = 0
+  N = len(label)
+  no_changes = True
+  
+  while i <= max_iter:
+    # El índice actual
+    j = i % N
+    
+    # Si un dato está clasificado incorrectamente
+    if signo(w.dot(datos[j, :])) != label[j]:
+      w = w + label[j] * datos[j]  # Actualiza el vector
+      no_changes = False  # Indica que ha habido cambios
+    
+    # Si hemos pasado por todos los datos
+    if j == N - 1:
+      if no_changes:  # Si no ha habido cambios, para
+        break
+      else:  # Si los ha habido, reinicia
+        no_changes = False
+    
+    i += 1
+  
+  return w
 
 
 # CODIGO DEL ESTUDIANTE
@@ -300,8 +300,8 @@ def ajusta_PLA(datos, label, max_iter, vini):
 # Random initializations
 iterations = []
 for i in range(0, 10):
-    pass
-    # CODIGO DEL ESTUDIANTE
+  pass
+  # CODIGO DEL ESTUDIANTE
 
 print('Valor medio de iteraciones necesario para converger: {}'.format(
     np.mean(np.asarray(iterations))))
@@ -322,9 +322,9 @@ input("\n--- Pulsar tecla para continuar ---\n")
 
 
 def sgdRL(TODO):
-    # CODIGO DEL ESTUDIANTE
-
-    return w
+  # CODIGO DEL ESTUDIANTE
+  
+  return w
 
 
 # CODIGO DEL ESTUDIANTE
@@ -345,24 +345,24 @@ input("\n--- Pulsar tecla para continuar ---\n")
 
 # Funcion para leer los datos
 def readData(file_x, file_y, digits, labels):
-    # Leemos los ficheros
-    datax = np.load(file_x)
-    datay = np.load(file_y)
-    y = []
-    x = []
-    # Solo guardamos los datos cuya clase sea la digits[0] o la digits[1]
-    for i in range(0, datay.size):
-        if datay[i] == digits[0] or datay[i] == digits[1]:
-            if datay[i] == digits[0]:
-                y.append(labels[0])
-            else:
-                y.append(labels[1])
-            x.append(np.array([1, datax[i][0], datax[i][1]]))
-
-    x = np.array(x, np.float64)
-    y = np.array(y, np.float64)
-
-    return x, y
+  # Leemos los ficheros
+  datax = np.load(file_x)
+  datay = np.load(file_y)
+  y = []
+  x = []
+  # Solo guardamos los datos cuya clase sea la digits[0] o la digits[1]
+  for i in range(0, datay.size):
+    if datay[i] == digits[0] or datay[i] == digits[1]:
+      if datay[i] == digits[0]:
+        y.append(labels[0])
+      else:
+        y.append(labels[1])
+      x.append(np.array([1, datax[i][0], datax[i][1]]))
+  
+  x = np.array(x, np.float64)
+  y = np.array(y, np.float64)
+  
+  return x, y
 
 
 # Lectura de los datos de entrenamiento
