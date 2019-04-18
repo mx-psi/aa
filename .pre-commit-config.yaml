@@ -2,5 +2,5 @@
     rev: 'v0.27.0'  # Use the sha / tag you want to point at
     hooks:
     - id: yapf
-      args: ["-r", "-i", "-p", "-vv"]
+      args: ["-r", "-i", "-p"]
       files: "P*/*.py"
