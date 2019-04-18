@@ -3,3 +3,4 @@
     hooks:
     - id: yapf
       args: ["-r", "-i", "-p", "-vv"]
+      files: "P*/*.py"
