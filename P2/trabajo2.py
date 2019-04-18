@@ -144,16 +144,16 @@ scatter(x, y,
 input("\n--- Pulsar tecla para continuar ---\n")
 
 # 1.2.b. Dibujar una gráfica donde los puntos muestren el resultado de su etiqueta, junto con la recta usada para ello
-# Array con 10% de indices aleatorios para introducir ruido
 
-y_rand_pos = np.random.choice([-1, 1], 5)
-y_rand_neg = np.random.choice([-1, 1], 5)
+y_noise = y.copy()
 
-# FIXME: Esto no funciona. ¿Cuál es la forma más sencilla?
-y[y == 1][:5] = y_rand_pos
-y[y == -1][:5] = y_rand_pos
+# Modifica un 10% aleatorio de cada etiqueta
+for label in [-1,1]:
+    y_lab = np.nonzero(y == label)[0]
+    y_rand = np.random.choice(y_lab, len(y_lab)//10, replace = False)
+    y_noise[y_rand] = -y_noise[y_rand]
 
-scatter(x, y,
+scatter(x, y_noise,
         ws=[vector_recta],
         labels_ws=["Frontera"],
         title="Puntos etiquetados con recta aleatoria (con ruido)")
@@ -253,9 +253,9 @@ clasificadores = [
 
 # Representa y calcula el número bien clasificado para cada tipo
 for clasificador, title in clasificadores:
-    plot_datos_cuad(x, y, clasificador, title=title)
+    plot_datos_cuad(x, y_noise, clasificador, title=title)
     print("Proporción correcta para '{}': {}"
-          .format(title, getProp(x, y, clasificador)))
+          .format(title, getProp(x, y_noise, clasificador)))
 
 input("\n--- Pulsar tecla para continuar ---\n")
 
@@ -277,7 +277,7 @@ def ajusta_PLA(datos, label, max_iter, vini):
     w = vini.copy()
     i = 0
     N = len(label)
-    any_changes = False
+    no_changes = True
 
     while i <= max_iter:
         # El índice actual
@@ -286,14 +286,14 @@ def ajusta_PLA(datos, label, max_iter, vini):
         # Si un dato está clasificado incorrectamente
         if signo(w.dot(datos[j, :])) != label[j]:
             w = w + label[j] * datos[j]  # Actualiza el vector
-            any_changes = True  # Indica que ha habido cambios
+            no_changes = False  # Indica que ha habido cambios
 
         # Si hemos pasado por todos los datos
         if j == N - 1:
-            if !any_changes:  # Si no ha habido cambios, para
+            if no_changes:  # Si no ha habido cambios, para
                 break
             else:  # Si los ha habido, reinicia
-                any_changes = False
+                no_changes = False
 
         i += 1
 
