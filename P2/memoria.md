@@ -5,6 +5,7 @@ author: Pablo Baeyens Fernández
 date: Curso 2018-2019
 documentclass: scrartcl
 toc: true
+colorlinks: true
 toc-depth: 2
 toc-title: Índice
 header-includes:
@@ -25,16 +26,52 @@ header-includes:
 > - `simula_unif(N, dim, rango)`, que calcula una lista de `N` vectores de dimensión `dim`. 
 >    Cada vector contiene `dim` números aleatorios uniformes en el intervalo `rango`.
 > - `simula_gaus(N, dim, sigma)`, que calcula una lista de `N` de vectores de dimensión `dim`,
->    donde cada posición del vector contiene un número aleatorio extraido de una distribucción 
+>    donde cada posición del vector contiene un número aleatorio extraido de una distribución 
 >    Gaussiana de media 0 y varianza dada, para cada dimension, por la posición del vector `sigma`.
 > - `simula_recta(intervalo)`, que simula de forma aleatoria los parámetros, $v = (a, b)$ de una
 >    recta, $y = ax + b$, que corta al cuadrado $[-50, 50] \times [-50, 50]$.
 
 ## 1. Dibujar una gráfica con la nube de puntos de salida correspondiente.
 
+Para este ejercicio utilizo la función `scatter` que implementé en la práctica anterior.
+Su funcionamiento se explica en la sección [Apéndice: `scatter`].
+
 ### a) Considere $N = 50$, $\operatorname{dim} = 2$, $\operatorname{rango} = [-50, +50]$ con `simula_unif(N, dim, rango)`.
 
+En primer lugar simulamos los datos con `simula_unif`,
+```python
+x = simula_unif(50, 2, [-50, 50])
+```
+
+A continuación mostramos el gráfico con la función `scatter`,
+```python
+scatter(x, title = "Nube de puntos uniforme")
+```
+
+El resultado puede verse en la figura 1.
+
+![Imagen generada en el apartado 1.1.a](img/1.1.a.png){width=70%}
+
+Como vemos los datos se reparten de forma uniforme en la figura
+
+
 ### b) Considere $N = 50$, $\operatorname{dim} = 2$ y $\sigma = [5, 7]$ con `simula_gaus(N, dim, sigma)`
+
+En primer lugar simulamos los datos con `simula_gaus`,
+```python
+x = simula_gaus(50, 2, [-50, 50])
+```
+
+A continuación mostramos el gráfico con la función `scatter`,
+```python
+scatter(x, title = "Nube de puntos gaussiana")
+```
+
+El resultado puede verse en la figura 2.
+
+![Imagen generada en el apartado 1.1.b](img/1.1.b.png){width=70%}
+
+Como vemos los datos se concentran alrededor de la media de la distribución gaussiana.
 
 ## 2. Generar una muestra de puntos 2D con etiquetas según el lado al que queden de una recta
 
@@ -42,11 +79,55 @@ header-includes:
 > usando el signo de la función $f(x, y) = y - ax - b$, es decir el signo de la distancia de cada punto a la recta 
 > simulada con `simula_recta`.
 
-Nota: $N = 50$, intervalo $[-50,50]$.
+Fijamos como número de puntos `N = 100` y como intervalo `[-50,50]`.
+
+En primer lugar generamos una recta aleatoria,
+```python
+intervalo = [-50, 50]
+a, b = simula_recta(intervalo
+vector_recta = np.array([b, a, -1])
+```
+e indicamos los coeficientes de la recta expresada como hiperplano para la representación.
+
+A continuación generamos los datos aleatorios de forma uniforme,
+```python
+N = 50
+x = simula_unif(N, 2, intervalo)
+```
+
+Por último asignamos las etiquetas a partir de la función `f` ya provista en la plantilla,
+```python
+y = np.empty((N, ))
+for i in range(N):
+  y[i] = f(x[i, 0], x[i, 1], a, b)
+```
 
 ### a) Dibujar una gráfica donde los puntos muestren el resultado de su etiqueta, junto con la recta usada para ello. (Observe que todos los puntos están bien clasificados respecto de la recta)
 
+
+Para la representación utilizamos la función `scatter`, apoyándonos en el vector de la recta `vector_recta` calculado anteriormente,
+```python
+scatter(x,
+        y,
+        ws = [vector_recta],
+        labels_ws = ["Frontera"],
+        title = "Puntos etiquetados en función de recta aleatoria")
+```
+
+El resultado puede verse en la figura 3.
+Como vemos todos los puntos están bien clasificados; los que quedan por encima de la recta tienen una etiqueta mientras que el resto tienen la etiqueta contraria.
+
+![Puntos clasificados respecto a una recta aleatoria](img/1.2.png){width=80%}
+
 ### b) Modifique de forma aleatoria un 10 % etiquetas positivas y otro 10 % de negativas y guarde los puntos con sus nuevas etiquetas. Dibuje de nuevo la gráfica anterior. (Ahora hay puntos mal clasificados respecto de la recta)
+
+Creamos un vector `y_noise = y.copy()` que es copia de las etiquetas correctas, en el que modificaremos aleatoriamente algunas etiquetas.
+
+Para cada etiqueta `label` de entre $\{-1,1\}$ tomamos el conjunto de índices del array original `y` donde tenemos esta etiqueta,
+```python
+y_lab = np.nonzero(y == label)[0]
+```
+A continuación tomamos un 10% aleatorio de entre estos 
 
 ## 3. Comparación de clasificadores
 
@@ -63,7 +144,14 @@ Nota: $N = 50$, intervalo $[-50,50]$.
 > mejores clasificadores que la función lineal? ¿En que ganan a la función lineal? Explicar el
 > razonamiento.
 
-Mostrar el porcentaje de puntos que no clasificamos bien
+
+| Clasificador | % de acierto |
+|--------------|--------------|
+| Recta        |   92%        |
+| Elipse 1     |   26%        |
+| Elipse 2     |   26%        |
+| Elipse 3     |   40%        |
+| Parábola     |   76%        |
 
 # 2. Modelos lineales
 ## 1. Algoritmo Perceptron
@@ -143,5 +231,61 @@ Si el batch es grande podríamos tener problemas de convergencia
 #### b) Calcular $E_{\operatorname{in}}$ y $E_{\operatorname{test}}$ (error sobre los datos de test).
 
 #### c) Obtener cotas sobre el verdadero valor de $E_{\operatorname{out}}$ . Pueden calcularse dos cotas una basada en $E_{\operatorname{in}}$ y otra basada en $E_{\operatorname{test}}$ . Usar una tolerancia $\delta= 0.05$. ¿Que cota es mejor?
+
+
+# Apéndice: `scatter`
+
+**Nota:** Esta sección incluye la explicación de la función `scatter`, que implementé para la práctica 1.
+No incluye ninguna información nueva respecto de lo comentado en la memoria de esa práctica.
+
+***
+
+La función scatter puede tomar entre uno y cuatro parámetros:
+
+- `x` el vector de puntos a representar (en coordenadas homogéneas, esto es, añadiendo un $1$ a cada punto),
+- `y` el vector de clases (1 o -1),
+- `ws` un iterable de vectores que representan rectas y
+- `labels_ws`, las etiquetas de estas rectas.
+
+Además podemos pasarle como argumento opcional un título mediante el parámetro opcional `title`.
+
+Inicialmente fijamos los límites del gráfico:
+
+```python
+_, ax = plt.subplots()
+xmin, xmax = np.min(x[:,1]), np.max(x[:,1])
+ax.set_xlim(xmin, xmax)
+ax.set_ylim(np.min(x[:,2]),np.max(x[:,2]))
+```
+
+A continuación, si no hay clases mostramos simplemente los puntos (`ax.scatter(x[:,1], x[:,2])`) y en otro caso los mostramos siguiendo el código que implementé para la práctica 0:
+
+```python
+class_colors = {-1 : 'green', 1 : 'blue'}
+# Para cada clase:
+for cls, name in [(-1,"Clase -1"), (1,"Clase 1")]:
+  # Obten los miembros de la clase
+  class_members = x[y == cls]
+  
+  # Representa en scatter plot
+  ax.scatter(class_members[:,1],
+             class_members[:,2],
+             c = class_colors[cls],
+             label = name)
+```
+
+Además, en caso de que haya rectas a representar las mostramos (con o sin etiqueta dependiendo de si se ha pasado ese argumento):
+
+```python
+x = np.array([xmin,xmax])
+if labels_ws is None:
+  for w in ws:
+    ax.plot(x,(-w[1]*x - w[0])/w[2])
+else:
+  for w, name in zip(ws, labels_ws):
+    ax.plot(x,(-w[1]*x - w[0])/w[2], label = name)
+```
+
+Finalmente mostramos en caso de que sea necesario la leyenda utilizando `ax.legend()`.
 
 
