@@ -3,6 +3,7 @@
 TRABAJO 2
 Nombre Estudiante: Pablo Baeyens Fernández
 """
+import math
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -125,15 +126,15 @@ def f(x, y, a, b):
 
 # CODIGO DEL ESTUDIANTE
 intervalo = [-50, 50]
-N = 50
 a, b = simula_recta(intervalo)
+vector_recta = np.array([b, a, -1])
+
+N = 100
 x = simula_unif(N, 2, intervalo)
 
 y = np.empty((N, ))
 for i in range(N):
   y[i] = f(x[i, 0], x[i, 1], a, b)
-
-vector_recta = np.array([b, a, -1])
 
 scatter(x,
         y,
@@ -148,9 +149,11 @@ input("\n--- Pulsar tecla para continuar ---\n")
 y_noise = y.copy()
 
 # Modifica un 10% aleatorio de cada etiqueta
-for label in [-1, 1]:
+for label in {-1, 1}:
   y_lab = np.nonzero(y == label)[0]
-  y_rand = np.random.choice(y_lab, len(y_lab) // 10, replace = False)
+  y_rand = np.random.choice(y_lab,
+                            math.ceil(0.1 * len(y_lab)),
+                            replace = False)
   y_noise[y_rand] = -y_noise[y_rand]
 
 scatter(x,
