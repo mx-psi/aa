@@ -12,7 +12,7 @@ from mpl_toolkits.mplot3d import Axes3D
 np.random.seed(1)
 
 # Establece formato unificado
-np.set_printoptions(formatter={'all': lambda x: "{: 1.5f}".format(float(x))})
+np.set_printoptions(formatter = {'all': lambda x: "{: 1.5f}".format(float(x))})
 
 
 def to_numpy(func):
@@ -66,7 +66,7 @@ def gradient_descent(initial_point,
                      grad_fun,
                      eta,
                      max_iter,
-                     error2get=-math.inf):
+                     error2get = -math.inf):
   """ Aproxima el mínimo de una función mediante
     el método de gradiente descendiente.
     Argumentos posicionales:
@@ -124,20 +124,20 @@ def display_figure():
   surf = ax.plot_surface(X,
                          Y,
                          Z,
-                         edgecolor='none',
-                         rstride=1,
-                         cstride=1,
-                         cmap='jet',
-                         alpha=0.8)
+                         edgecolor = 'none',
+                         rstride = 1,
+                         cstride = 1,
+                         cmap = 'jet',
+                         alpha = 0.8)
   min_point = np.array([E_minima[0], E_minima[1]])
   min_point_ = min_point[:, np.newaxis]
   ax.plot(min_point_[0],
           min_point_[1],
           E([min_point_[0], min_point_[1]]),
           'r*',
-          markersize=5)
+          markersize = 5)
   ax.set(
-      title=
+      title =
       'Ejercicio 1.2. Función sobre la que se calcula el descenso de gradiente'
   )
   ax.set_xlabel('u')
@@ -162,12 +162,12 @@ def f(x, y):
 
 def dfx(x, y):
   """Derivada parcial de f respecto de x."""
-  return 2 * x + 4 * np.pi * np.cos(2 * np.pi * x) * np.sin(2 * np.pi * y)
+  return 2*x + 4 * np.pi * np.cos(2 * np.pi * x) * np.sin(2 * np.pi * y)
 
 
 def dfy(x, y):
   """Derivada parcial de f respecto de y."""
-  return 4 * y + 4 * np.pi * np.sin(2 * np.pi * x) * np.cos(2 * np.pi * y)
+  return 4*y + 4 * np.pi * np.sin(2 * np.pi * x) * np.cos(2 * np.pi * y)
 
 
 @to_numpy
@@ -199,8 +199,8 @@ for eta, resultados in [(0.01, resEtaPeq), (0.1, resEtaGrande)]:
 def compara_resultados():
   """Muestra curvas de decrecimiento para GD con diferentes tasas de aprendizaje."""
   print("Curvas de decrecimiento para el gradiente descendente")
-  plt.plot(resEtaPeq, 'b-o', label=r"$\eta$ = 0.01")
-  plt.plot(resEtaGrande, 'k-o', label=r"$\eta$ = 0.1")
+  plt.plot(resEtaPeq, 'b-o', label = r"$\eta$ = 0.01")
+  plt.plot(resEtaGrande, 'k-o', label = r"$\eta$ = 0.1")
   plt.legend()
   plt.show()
 
@@ -229,11 +229,11 @@ def contour_plot(min_point):
     la región en la que están los mínimos globales."""
   x = np.arange(-2, 2, 0.01)
   y = np.arange(-2, 2, 0.01)
-  xx, yy = np.meshgrid(x, y, sparse=True)
+  xx, yy = np.meshgrid(x, y, sparse = True)
   z = f([xx, yy])
-  h = plt.contourf(x, y, z, cmap="plasma")
+  h = plt.contourf(x, y, z, cmap = "plasma")
   plt.contour(x, y, xx**2 + 2 * yy**2 - 2, [0])
-  plt.plot(min_point[0], min_point[1], 'r*', markersize=5)
+  plt.plot(min_point[0], min_point[1], 'r*', markersize = 5)
   plt.show()
 
 
@@ -288,7 +288,7 @@ def dErr(x, y, w):
   return 2 / len(x) * (x.T.dot(x.dot(w) - y))
 
 
-def scatter(x, y=None, ws=None, labels_ws=None):
+def scatter(x, y = None, ws = None, labels_ws = None):
   """Representa scatter plot.
     Puede llamarse de 4 formas diferentes
 
@@ -316,8 +316,8 @@ def scatter(x, y=None, ws=None, labels_ws=None):
       # Representa en scatter plot
       ax.scatter(class_members[:, 1],
                  class_members[:, 2],
-                 c=class_colors[cls],
-                 label=name)
+                 c = class_colors[cls],
+                 label = name)
   
   if ws is not None:
     x = np.array([xmin, xmax])
@@ -326,7 +326,7 @@ def scatter(x, y=None, ws=None, labels_ws=None):
         ax.plot(x, (-w[1] * x - w[0]) / w[2])
     else:
       for w, name in zip(ws, labels_ws):
-        ax.plot(x, (-w[1] * x - w[0]) / w[2], label=name)
+        ax.plot(x, (-w[1] * x - w[0]) / w[2], label = name)
   
   if y is not None or ws is not None:
     ax.legend()
@@ -334,7 +334,7 @@ def scatter(x, y=None, ws=None, labels_ws=None):
 
 
 # # Gradiente Descendente Estocástico
-def sgd(x, y, eta=0.01, max_iter=1000, batch_size=32):
+def sgd(x, y, eta = 0.01, max_iter = 1000, batch_size = 32):
   """Implementa la función de gradiente descendiente estocástico
     para problemas de regresión lineal.
     Argumentos posicionales:
@@ -380,7 +380,7 @@ x, y = readData('datos/X_train.npy', 'datos/y_train.npy')
 # Lectura de los datos para el test
 x_test, y_test = readData('datos/X_test.npy', 'datos/y_test.npy')
 
-w_sgd = sgd(x, y, eta=0.01, max_iter=20000)
+w_sgd = sgd(x, y, eta = 0.01, max_iter = 20000)
 print('Bondad del resultado para grad. descendente estocastico:')
 print("  Ein:  ", Err(x, y, w_sgd))
 print("  Eout: ", Err(x_test, y_test, w_sgd))
@@ -522,10 +522,10 @@ resEtaPeqNewton = np.apply_along_axis(
 resEtaGrandeNewton = np.apply_along_axis(
     f, 1, newton(np.array([0.1, 0.1]), f, gradf, hessianf, 0.1, 50))
 
-plt.plot(resEtaPeq, 'b-o', label=r"GD, $\eta$ = 0.01")
-plt.plot(resEtaGrande, 'k-o', label=r"GD, $\eta$ = 0.1")
-plt.plot(resEtaPeqNewton, 'g-o', label=r"Newton, $\eta$ = 0.01")
-plt.plot(resEtaGrandeNewton, 'c-o', label=r"Newton, $\eta$ = 0.1")
+plt.plot(resEtaPeq, 'b-o', label = r"GD, $\eta$ = 0.01")
+plt.plot(resEtaGrande, 'k-o', label = r"GD, $\eta$ = 0.1")
+plt.plot(resEtaPeqNewton, 'g-o', label = r"Newton, $\eta$ = 0.01")
+plt.plot(resEtaGrandeNewton, 'c-o', label = r"Newton, $\eta$ = 0.1")
 plt.legend()
 plt.show()
 

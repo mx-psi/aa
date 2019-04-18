@@ -1,3 +1,6 @@
 [style]
 indent_width = 2
 indent_blank_lines = true
+arithmetic_precedence_indication = true
+spaces_around_default_or_named_assign = true
+split_before_dot= true

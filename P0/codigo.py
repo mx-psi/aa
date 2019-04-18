@@ -59,8 +59,8 @@ def parte1(iris):
     # Representa en scatter plot
     ax.scatter(class_members[:, 0],
                class_members[:, 1],
-               c=class_colors[cls],
-               label=name)
+               c = class_colors[cls],
+               label = name)
   
   ax.legend()  # leyenda
   
@@ -126,7 +126,7 @@ def parte3():
   print("=======")
   
   # Obtener 100 valores equiespaciados entre 0 y 2π
-  x = np.linspace(0, 2 * np.pi, num=100)
+  x = np.linspace(0, 2 * np.pi, num = 100)
   
   # Obtener el valor en x para seno, coseno y su suma
   sin_values = np.sin(x)
