@@ -164,10 +164,10 @@ Como vemos en este caso hay algunos puntos, tanto en la parte superior como en l
 
 > Supongamos ahora que las siguientes funciones definen la frontera de clasificación de los puntos de la muestra en lugar de una recta
 > 
-> - $f (x, y) = (x - 10)^2 + (y - 20)^2 - 400$
-> - $f (x, y) = 0.5(x + 10)^2 + (y - 20)^2 - 400$
-> - $f (x, y) = 0.5(x - 10)^2 - (y + 20)^2 - 400$
-> - $f (x, y) = y - 20x^2 - 5x + 3$
+> 1. $f (x, y) = (x - 10)^2 + (y - 20)^2 - 400$
+> 2. $f (x, y) = 0.5(x + 10)^2 + (y - 20)^2 - 400$
+> 3. $f (x, y) = 0.5(x - 10)^2 - (y + 20)^2 - 400$
+> 4. $f (x, y) = y - 20x^2 - 5x + 3$
 >
 > Visualizar el etiquetado generado en 2b junto con cada una de las gráficas de cada una de
 > las funciones. Comparar las formas de las regiones positivas y negativas de estas nuevas
@@ -175,6 +175,37 @@ Como vemos en este caso hay algunos puntos, tanto en la parte superior como en l
 > mejores clasificadores que la función lineal? ¿En que ganan a la función lineal? Explicar el
 > razonamiento.
 
+Nos apoyamos en la función `plot_datos_cuad` proporcionada en la plantilla.
+Además definimos la función `getPorc`, que obtiene el porcentaje de `datos` correctamente clasificados (de acuerdo a `labels`) por un `clasificador`. El cuerpo de la función es (omitiendo comentarios):
+```python
+def getPorc(datos, labels, clasificador):
+  signos = labels*clasificador(datos)
+  return 100*len(signos[signos >= 0])/len(labels)
+```
+
+Es decir, calculamos el producto para cada dato de su etiqueta por la salida del clasificador.
+Si el resultado es positivo tendremos que la clasificación ha sido correcta y será incorrecta en otro caso.
+Devolvemos el porcentaje de `signos` no negativos de entre los totales.
+
+Además, creamos una lista de pares de clasificadores (dados por funciones anónimas) y sus nombres,
+```python
+clasificadores = [
+  (lambda x: x[:, 1] - a*x[:, 0] - b, "Recta"),
+  (lambda x: (x[:, 0] - 10)**2 + (x[:, 1] - 20)**2 - 400, "Elipse 1"),
+  (lambda x: 0.5*(x[:, 0] - 10)**2 + (x[:, 1] - 20)**2 - 400, "Elipse 2"),
+  (lambda x: 0.5*(x[:, 0] - 10)**2 + (x[:, 1] + 20)**2 - 400, "Elipse 3"),
+  (lambda x: x[:, 1] - 20*x[:, 0]**2 - 5*x[:, 0] + 3, "Parábola")
+]
+```
+
+Para generar la representación y los datos bien clasificados obtenemos, para cada clasificador `f`, su representación con `plot_datos_cuad` y su porcentaje de correctos con `getPorc`:
+```python
+for f, title in clasificadores:
+  plot_datos_cuad(x, y_noise, f, title = title)
+  print("Correctos para '{}': {}".format(title, getPorc(x, y_noise, f)))
+```
+
+Los resultados de porcentaje de acierto pueden verse en la siguiente tabla:
 
 | Clasificador | % de acierto |
 |--------------|--------------|
@@ -183,6 +214,10 @@ Como vemos en este caso hay algunos puntos, tanto en la parte superior como en l
 | Elipse 2     |   26%        |
 | Elipse 3     |   40%        |
 | Parábola     |   76%        |
+
+Los gráficos pueden verse en las figuras.
+
+
 
 # 2. Modelos lineales
 ## 1. Algoritmo Perceptron
