@@ -11,6 +11,10 @@ import matplotlib.pyplot as plt
 np.random.seed(2)
 
 
+def espera():
+  input("\n--- Pulsar tecla para continuar ---\n")
+
+
 def simula_unif(N, dim, rango):
   return np.random.uniform(rango[0], rango[1], (N, dim))
 
@@ -55,7 +59,7 @@ def scatter(x, y = None, ws = None, labels_ws = None, title = None):
     4. scatter(x,y,ws,lab) muestra `x` con etiquetas `y` y rectas `ws`,
                            etiquetadas por `lab`
     """
-  
+  return None  # TODO: delete
   _, ax = plt.subplots()
   xmin, xmax = np.min(x[:, 0]), np.max(x[:, 0])
   ax.set_xlim(xmin, xmax)
@@ -94,16 +98,16 @@ def scatter(x, y = None, ws = None, labels_ws = None, title = None):
 
 
 # Apartado a)
-print("Apartado a (en ventana aparte)")
+print("Apartado 1.1.a (en ventana aparte)")
 x = simula_unif(50, 2, [-50, 50])
 scatter(x, title = "Nube de puntos uniforme")
 
 # Apartado b)
-print("Apartado b (en ventana aparte)")
+print("Apartado 1.1.b (en ventana aparte)")
 x = simula_gaus(50, 2, np.array([5, 7]))
 scatter(x, title = "Nube de puntos gaussiana")
 
-input("\n--- Pulsar tecla para continuar ---\n")
+espera()
 
 ###############################################################################
 ###############################################################################
@@ -131,11 +135,13 @@ vector_recta = np.array([b, a, -1])
 
 N = 100
 x = simula_unif(N, 2, intervalo)
+x_hom = np.hstack((np.ones((N, 1)), x))
 
 y = np.empty((N, ))
 for i in range(N):
   y[i] = f(x[i, 0], x[i, 1], a, b)
 
+print("Apartado 1.2.a (ventana aparte)")
 scatter(
   x,
   y,
@@ -143,7 +149,7 @@ scatter(
   labels_ws = ["Frontera"],
   title = "Puntos etiquetados en función de recta aleatoria")
 
-input("\n--- Pulsar tecla para continuar ---\n")
+espera()
 
 # 1.2.b. Dibujar una gráfica donde los puntos muestren el resultado de su etiqueta, junto con la recta usada para ello
 
@@ -155,6 +161,7 @@ for label in {-1, 1}:
   y_rand = np.random.choice(y_lab, math.ceil(0.1*len(y_lab)), replace = False)
   y_noise[y_rand] = -y_noise[y_rand]
 
+print("Apartado 1.2.b (ventana aparte)")
 scatter(
   x,
   y_noise,
@@ -164,7 +171,7 @@ scatter(
 
 # CODIGO DEL ESTUDIANTE
 
-input("\n--- Pulsar tecla para continuar ---\n")
+espera()
 
 ###############################################################################
 ###############################################################################
@@ -177,6 +184,7 @@ input("\n--- Pulsar tecla para continuar ---\n")
 
 def plot_datos_cuad(
     X, y, fz, title = 'Point cloud plot', xaxis = 'x axis', yaxis = 'y axis'):
+  return None  # TODO: delete
   # Preparar datos
   min_xy = X.min(axis = 0)
   max_xy = X.max(axis = 0)
@@ -228,8 +236,8 @@ def plot_datos_cuad(
 # CODIGO DEL ESTUDIANTE
 
 
-def getProp(datos, labels, clasificador):
-  """Obtiene la proporción de puntos correctamente clasificados
+def getPorc(datos, labels, clasificador):
+  """Obtiene el porcentaje de puntos correctamente clasificados
     por un clasificador dado.
     Argumentos posicionales:
     - datos: datos,
@@ -238,7 +246,7 @@ def getProp(datos, labels, clasificador):
   
   # Los campos no negativos indican clasificación correcta
   signos = labels*clasificador(datos)
-  return len(signos[signos >= 0])/len(labels)
+  return 100*len(signos[signos >= 0])/len(labels)
 
 
 # Lista de clasificadores con su título
@@ -250,14 +258,14 @@ clasificadores = [
   (lambda x: x[:, 1] - 20*x[:, 0]**2 - 5*x[:, 0] + 3, "Parábola")
 ]
 
-# Representa y calcula el número bien clasificado para cada tipo
-for clasificador, title in clasificadores:
-  plot_datos_cuad(x, y_noise, clasificador, title = title)
-  print(
-    "Proporción correcta para '{}': {}".format(
-      title, getProp(x, y_noise, clasificador)))
+print("Apartado 1.3 (ventana aparte y terminal)")
 
-input("\n--- Pulsar tecla para continuar ---\n")
+# Representa y calcula el número bien clasificado para cada tipo
+for f, title in clasificadores:
+  plot_datos_cuad(x, y_noise, f, title = title)
+  print("Correctos para '{}': {}%".format(title, getPorc(x, y_noise, f)))
+
+espera()
 
 ###############################################################################
 ###############################################################################
@@ -266,26 +274,29 @@ input("\n--- Pulsar tecla para continuar ---\n")
 # EJERCICIO 2.1: ALGORITMO PERCEPTRON
 
 
-def ajusta_PLA(datos, label, max_iter, vini):
+def ajusta_PLA(datos, labels, max_iter, vini):
   """Calcula el hiperplano solución al problema de clasificación binaria.
     Argumentos posicionales:
     - datos: matriz de datos,
-    - label: Etiquetas,
+    - labels: Etiquetas,
     - max_iter: Número máximo de iteraciones
-    - vini: Valor inicial"""
+    - vini: Valor inicial
+  Devuelve:
+  - w, El vector de pesos y
+  - iterations el número de iteraciones."""
   
   w = vini.copy()
   i = 0
-  N = len(label)
+  N = len(labels)
   no_changes = True
   
-  while i <= max_iter:
+  while i < max_iter:
     # El índice actual
     j = i % N
     
     # Si un dato está clasificado incorrectamente
-    if signo(w.dot(datos[j, :])) != label[j]:
-      w = w + label[j]*datos[j]  # Actualiza el vector
+    if signo(w.dot(datos[j])) != labels[j]:
+      w = w + labels[j]*datos[j]  # Actualiza el vector
       no_changes = False  # Indica que ha habido cambios
     
     # Si hemos pasado por todos los datos
@@ -293,32 +304,57 @@ def ajusta_PLA(datos, label, max_iter, vini):
       if no_changes:  # Si no ha habido cambios, para
         break
       else:  # Si los ha habido, reinicia
-        no_changes = False
+        no_changes = True
     
     i += 1
   
-  return w
+  return w, i
 
 
-# CODIGO DEL ESTUDIANTE
+print("Apartado 2.1.a")
 
-# Random initializations
-iterations = []
-for i in range(0, 10):
-  pass
-  # CODIGO DEL ESTUDIANTE
 
-print(
-  'Valor medio de iteraciones necesario para converger: {}'.format(
-    np.mean(np.asarray(iterations))))
+def clasifHiperplano(w):
+  """Devuelve un clasificador
+  respecto del vector normal de un hiperplano"""
+  return lambda x: x.dot(w)
 
-input("\n--- Pulsar tecla para continuar ---\n")
+
+def testPLA(datos, labels, max_iters = 100000):
+  """Prueba el algoritmo de Perceptron para un conjunto de datos dado."""
+  
+  w, its = ajusta_PLA(datos, labels, max_iters, np.zeros(3))
+  
+  print("Iteraciones en el caso cero: {}".format(its))
+  print(
+    "Porcentaje correctos: {}%".format(
+      getPorc(datos, labels, clasifHiperplano(w))))
+  
+  # Random initializations
+  iterations = []
+  percentages = []
+  
+  for i in range(0, 10):
+    w, its = ajusta_PLA(datos, labels, max_iters, np.random.rand(3))
+    iterations.append(its)
+    percentages.append(getPorc(datos, labels, clasifHiperplano(w)))
+  
+  print(
+    'Valor medio de iteraciones para converger: {}'.format(
+      np.mean(np.asarray(iterations))))
+  print(
+    'Porcentaje correctos medio: {}%'.format(np.mean(np.asarray(percentages))))
+
+
+testPLA(x_hom, y)
+espera()
 
 # Ahora con los datos del ejercicio 1.2.b
 
-# CODIGO DEL ESTUDIANTE
+print("Apartado 2.1.b")
 
-input("\n--- Pulsar tecla para continuar ---\n")
+testPLA(x_hom, y_noise)
+espera()
 
 ###############################################################################
 ###############################################################################
@@ -327,21 +363,44 @@ input("\n--- Pulsar tecla para continuar ---\n")
 # EJERCICIO 3: REGRESIÓN LOGÍSTICA CON STOCHASTIC GRADIENT DESCENT
 
 
-def sgdRL(TODO):
-  # CODIGO DEL ESTUDIANTE
+def gradRL(dato, label, w):
+  return -label*dato/(1 + np.exp(label*w.dot(dato)))
+
+
+def sgdRL(datos, labels):
+  """Implementa el algoritmo de regresión logística
+  mediante SGD con tamaño de batch 1.
+  Argumentos posicionales:
+  - datos: datos y
+  - labels: etiquetas.
+  Devuelve: Vector w que define el clasificador.
+  """
+  
+  N, dim = datos.shape
+  w = np.zeros(dim)
+  ha_cambiado = True  # Si ha variado en la época actual
+  idxs = np.arange(N)  # vector de índices
+  eta = 0.01
+  
+  while ha_cambiado:
+    w_old = w
+    idxs = np.random.permutation(idxs)
+    for idx in idxs:
+      w += -eta*gradRL(datos[idx], labels[idx], w)
+    ha_cambiado = np.linalg.norm(w - w_old) > 0.01
   
   return w
 
 
 # CODIGO DEL ESTUDIANTE
-input("\n--- Pulsar tecla para continuar ---\n")
+espera()
 
 # Usar la muestra de datos etiquetada para encontrar nuestra solución g y estimar Eout
 # usando para ello un número suficientemente grande de nuevas muestras (>999).
 
 # CODIGO DEL ESTUDIANTE
 
-input("\n--- Pulsar tecla para continuar ---\n")
+espera()
 
 ###############################################################################
 ###############################################################################
@@ -420,19 +479,19 @@ ax.set_xlim((0, 1))
 plt.legend()
 plt.show()
 
-input("\n--- Pulsar tecla para continuar ---\n")
+espera()
 
 # LINEAR REGRESSION FOR CLASSIFICATION
 
 # CODIGO DEL ESTUDIANTE
 
-input("\n--- Pulsar tecla para continuar ---\n")
+espera()
 
 # POCKET ALGORITHM
 
 # CODIGO DEL ESTUDIANTE
 
-input("\n--- Pulsar tecla para continuar ---\n")
+espera()
 
 # COTA SOBRE EL ERROR
 
