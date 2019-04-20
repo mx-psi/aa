@@ -229,6 +229,45 @@ Los gráficos pueden verse en las figuras.
 > `max_iter` es el número máximo de iteraciones permitidas y `vini` el valor inicial del vector.
 > La función devuelve los coeficientes del hiperplano.
 
+La función `ajusta_PLA` implementa el algoritmo PLA.
+La variable `w` guarda el vector de pesos actual e `it` guarda el número de iteraciones actual.
+
+En primer lugar inicializamos `w` con una copia del vector de inicio `vini`,
+```python
+w = vini.copy()
+```
+
+A continuación, para cada época (hasta un máximo de `max_iters` épocas), copiamos `w_old = w.copy()` y actualizamos el vector de pesos si no predice el signo correcto para un dato concreto,
+```python
+for dato, label in zip(datos, labels):
+  if signo(w.dot(dato)) != label:
+    w += label*dato
+```
+
+Por último, si no ha habido cambios (esto es, si el vector `w` es el mismo que `w_old`), devuelve el vector de pesos y el número de iteraciones,
+```python
+if np.all(w == w_old): # No hay cambios
+  return w, it
+```
+
+El algoritmo completo queda
+```python
+def ajusta_PLA(datos, labels, max_iter, vini):
+  w = vini.copy()
+  
+  for it in range(1, max_iter + 1):
+    w_old = w.copy()
+    
+    for dato, label in zip(datos, labels):
+      if signo(w.dot(dato)) != label:
+        w += label*dato
+    
+    if np.all(w == w_old): # No hay cambios
+      return w, it
+  
+  return w, it
+```
+
 ### a) Ejecutar el algoritmo PLA con los datos simulados en los apartados 2a de la sección.1.
 
 > Inicializar el algoritmo con: a) el vector cero y, b) con vectores de números aleatorios
@@ -236,13 +275,62 @@ Los gráficos pueden verse en las figuras.
 > converger. Valorar el resultado relacionando el punto de inicio con el número de
 >iteraciones.
 
+Para utilizarla tanto en este apartado como en el siguiente, definimos el clasificador asociado al vector normal a un hiperplano,
+```python
+def clasifHiperplano(w):
+  return lambda x: x.dot(w)
+```
+
+Además, para reutilizar el código en el apartado b, definimos una función que ejecuta el algoritmo PLA en las condiciones descritas por el enunciado. La cabecera será `testPLA(x, y, max_iters = 1000)`.
+
 #### Inicializado con el vector cero
+
+En primer lugar ejecutamos con el vector cero,
+```python
+w, its = ajusta_PLA(x, y, max_iters, np.zeros(3))
+  
+print("Vector inicial cero")
+print("Iteraciones: {} épocas".format(its))
+print("% correctos: {}%".format(getPorc(x, y, clasifHiperplano(w))))
+```
+mostramos tanto el porcentaje correcto como el número de épocas necesarias para converger.
 
 #### Inicializado con vectores de números aleatorios
 
+Para esta parte creamos dos listas, `iterations` y `percentages` en las que guardamos el número de iteraciones y el porcentaje de puntos clasificados correctamente para cada vector aleatorio.
+
+Ejecutamos el algoritmo para cada vector,
+```python
+for i in range(0, 10):
+  w, its = ajusta_PLA(x, y, max_iters, np.random.rand(3))
+  iterations.append(its)
+  percentages.append(getPorc(x, y, clasifHiperplano(w)))
+```
+y finalmente mostramos la media en ambos casos,
+```python
+print("Vector inicial aleatorio (media de 10 ejecuciones)")
+print('Iteraciones: {} épocas (± {:.02f})'
+      .format(np.mean(iterations),np.std(iterations)))
+print('% correctos: {}% (± {:.02f})'
+      .format(np.mean(percentages),np.std(percentages)))
+```
+
 #### Valoración del resultado
 
+En este apartado ejecutamos `testPLA(x_hom, y)`.
+En todos los casos llegamos a clasificar de forma perfecta los puntos.
+
+En el caso del vector cero, tarda un total de 3 épocas en converger, mientras que en el caso aleatorio tardamos de media $2.2 \pm 0.98$ épocas en converger.
+Tarda menos en el caso aleatorio ya que el porcentaje de clasificación inicial será probablemente más alto.
+
+Como vemos, el algoritmo es capaz de converger rápidamente hacia la solución óptima en este caso, ya que los datos son separables. Con otras semillas el algoritmo tarda más épocas pero es capaz de hacerlo correctamente.
+
+
 ### b) Hacer lo mismo que antes usando ahora los datos del apartado 2b de la sección.1. ¿Observa algún comportamiento diferente? En caso afirmativo diga cual y las razones para que ello ocurra.
+
+En este apartado ejecutamos `testPLA(x_hom, y_noise)`.
+
+
 
 ## 2. Regresión logística
 
@@ -276,7 +364,7 @@ y por último las etiquetas,
 ```python
 labels = np.empty((N, ))
 for i in range(N):
-  labels[i] = f(x[i, 0], x[i, 1], a, b)
+  labels[i] = f(datos[i, 0], datos[i, 1], a, b)
 ```
 
 ### a)  Implementar Regresión Logística (RL) con Gradiente Descendente Estocástico (SGD) 
