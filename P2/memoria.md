@@ -259,6 +259,26 @@ Los gráficos pueden verse en las figuras.
 > Seleccionar $N = 100$ puntos aleatorios $\{\x_n\}$ de $\mathcal{X}$ y evaluar las respuestas
 > $\{y_n\}$ de todos ellos respecto de la frontera elegida.
 
+
+En primer lugar generams los datos de forma similar al ejercicio 1.
+Generamos la recta,
+```python
+intervalo = [-2, 2]
+a, b = simula_recta(intervalo)
+```
+los datos (con su versión homogénea),
+```python
+N = 100
+datos = simula_unif(N, 2, intervalo)
+datos_hom = np.hstack((np.ones((N, 1)), datos))
+```
+y por último las etiquetas,
+```python
+labels = np.empty((N, ))
+for i in range(N):
+  labels[i] = f(x[i, 0], x[i, 1], a, b)
+```
+
 ### a)  Implementar Regresión Logística (RL) con Gradiente Descendente Estocástico (SGD) 
 
 >  Implementar Regresión Logística(RL) con Gradiente Descendente Estocástico (SGD)
@@ -272,9 +292,55 @@ Los gráficos pueden verse en las figuras.
 >   usarlos en cada época del algoritmo.
 > - Usar una tasa de aprendizaje de $\eta = 0.01$
 
-Las etiquetas siguen siendo -1 y +1
-Utilizar SGD con batch_size de 1
-Si el batch es grande podríamos tener problemas de convergencia
+El algoritmo se implementa en la función `sgdRL`, que toma como argumentos los `datos` y las etiquetas (`labels`).
+Además toma como argumento la tasa de aprendizaje `eta` con valor por defecto `0.01`.
+
+Implementamos además una función de gradiente, `gradRL`, con el gradiente para un punto,
+```python
+def gradRL(dato, label, w):
+  return -label*dato/(1 + np.exp(label*w.dot(dato)))
+```
+Utilizamos un tamaño de batch 1.
+
+
+En primer lugar inicializamos el vector de pesos `w`, una variable que nos dice si ha habido cambios suficientemente grandes del vector de pesos en esta iteración (`ha_cambiado`) y un vector de índices `idxs`,
+```python
+  N, dim = datos.shape
+  w = np.zeros(dim)
+  ha_cambiado = True  # Si ha variado en la época actual
+  idxs = np.arange(N)  # vector de índices
+```
+
+El bucle principal del algoritmo ejecuta una época cada vez. 
+En primer lugar copia el vector de pesos para comprobar si cambia en la época actual,
+a continuación hace una permutación del vector de índices y finalmente aplica el algoritmo de gradiente descendente para cada dato:
+```python
+while ha_cambiado:
+  w_old = w.copy()
+  idxs = np.random.permutation(idxs)
+  for idx in idxs:
+    w += -eta*gradRL(datos[idx], labels[idx], w)
+  ha_cambiado = np.linalg.norm(w - w_old) > 0.01
+```
+La comprobación final nos indica si ha cambiado el vector de pesos en esta iteración.
+
+Finalmente devolvemos `w`. El código completo de la función (omitiendo comentarios) es:
+```python
+def sgdRL(datos, labels, eta = 0.01):
+  N, dim = datos.shape
+  w = np.zeros(dim)
+  ha_cambiado = True
+  idxs = np.arange(N)
+
+  while ha_cambiado:
+    w_old = w.copy()
+    idxs = np.random.permutation(idxs)
+    for idx in idxs:
+      w += -eta*gradRL(datos[idx], labels[idx], w)
+    ha_cambiado = np.linalg.norm(w - w_old) > 0.01
+
+  return w
+```
 
 ### b) Usar la muestra de datos etiquetada para encontrar nuestra solución $g$ y estimar $E_{\operatorname{out}}$ usando para ello un número suficientemente grande de nuevas muestras ($>999$).
 

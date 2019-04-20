@@ -8,7 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Fijamos la semilla
-np.random.seed(2)
+np.random.seed(1)
 
 
 def espera():
@@ -59,7 +59,7 @@ def scatter(x, y = None, ws = None, labels_ws = None, title = None):
     4. scatter(x,y,ws,lab) muestra `x` con etiquetas `y` y rectas `ws`,
                            etiquetadas por `lab`
     """
-  return None  # TODO: delete
+  #return None  # TODO: delete
   _, ax = plt.subplots()
   xmin, xmax = np.min(x[:, 0]), np.max(x[:, 0])
   ax.set_xlim(xmin, xmax)
@@ -133,7 +133,7 @@ intervalo = [-50, 50]
 a, b = simula_recta(intervalo)
 vector_recta = np.array([b, a, -1])
 
-N = 100
+N = 50
 x = simula_unif(N, 2, intervalo)
 x_hom = np.hstack((np.ones((N, 1)), x))
 
@@ -261,9 +261,9 @@ clasificadores = [
 print("Apartado 1.3 (ventana aparte y terminal)")
 
 # Representa y calcula el número bien clasificado para cada tipo
-for f, title in clasificadores:
-  plot_datos_cuad(x, y_noise, f, title = title)
-  print("Correctos para '{}': {}%".format(title, getPorc(x, y_noise, f)))
+for clasif, title in clasificadores:
+  plot_datos_cuad(x, y_noise, clasif, title = title)
+  print("Correctos para '{}': {}%".format(title, getPorc(x, y_noise, clasif)))
 
 espera()
 
@@ -286,32 +286,17 @@ def ajusta_PLA(datos, labels, max_iter, vini):
   - iterations el número de iteraciones."""
   
   w = vini.copy()
-  i = 0
-  N = len(labels)
-  no_changes = True
   
-  while i < max_iter:
-    # El índice actual
-    j = i % N
+  for it in range(1, max_iter + 1):
+    w_old = w.copy()
+    for dato, label in zip(datos, labels):
+      if signo(w.dot(dato)) != label:
+        w += label*dato
     
-    # Si un dato está clasificado incorrectamente
-    if signo(w.dot(datos[j])) != labels[j]:
-      w = w + labels[j]*datos[j]  # Actualiza el vector
-      no_changes = False  # Indica que ha habido cambios
-    
-    # Si hemos pasado por todos los datos
-    if j == N - 1:
-      if no_changes:  # Si no ha habido cambios, para
-        break
-      else:  # Si los ha habido, reinicia
-        no_changes = True
-    
-    i += 1
+    if np.all(w == w_old):  # Si no ha habido cambios
+      return w, it
   
-  return w, i
-
-
-print("Apartado 2.1.a")
+  return w, it
 
 
 def clasifHiperplano(w):
@@ -320,14 +305,14 @@ def clasifHiperplano(w):
   return lambda x: x.dot(w)
 
 
-def testPLA(datos, labels, max_iters = 100000):
+def testPLA(datos, labels, max_iters = 1000):
   """Prueba el algoritmo de Perceptron para un conjunto de datos dado."""
   
   w, its = ajusta_PLA(datos, labels, max_iters, np.zeros(3))
   
-  print("Iteraciones en el caso cero: {}".format(its))
+  print("Iteraciones (cero): {} épocas".format(its))
   print(
-    "Porcentaje correctos: {}%".format(
+    "% correctos (cero): {}%".format(
       getPorc(datos, labels, clasifHiperplano(w))))
   
   # Random initializations
@@ -340,19 +325,17 @@ def testPLA(datos, labels, max_iters = 100000):
     percentages.append(getPorc(datos, labels, clasifHiperplano(w)))
   
   print(
-    'Valor medio de iteraciones para converger: {}'.format(
-      np.mean(np.asarray(iterations))))
-  print(
-    'Porcentaje correctos medio: {}%'.format(np.mean(np.asarray(percentages))))
+    'Iteraciones medias: {} épocas'.format(np.mean(np.asarray(iterations))))
+  print('% correctos medio: {}%'.format(np.mean(np.asarray(percentages))))
 
 
+print("Apartado 2.1.a (sin ruido)")
 testPLA(x_hom, y)
 espera()
 
 # Ahora con los datos del ejercicio 1.2.b
 
-print("Apartado 2.1.b")
-
+print("Apartado 2.1.b (con ruido)")
 testPLA(x_hom, y_noise)
 espera()
 
@@ -367,7 +350,7 @@ def gradRL(dato, label, w):
   return -label*dato/(1 + np.exp(label*w.dot(dato)))
 
 
-def sgdRL(datos, labels):
+def sgdRL(datos, labels, eta = 0.01):
   """Implementa el algoritmo de regresión logística
   mediante SGD con tamaño de batch 1.
   Argumentos posicionales:
@@ -380,10 +363,9 @@ def sgdRL(datos, labels):
   w = np.zeros(dim)
   ha_cambiado = True  # Si ha variado en la época actual
   idxs = np.arange(N)  # vector de índices
-  eta = 0.01
   
   while ha_cambiado:
-    w_old = w
+    w_old = w.copy()
     idxs = np.random.permutation(idxs)
     for idx in idxs:
       w += -eta*gradRL(datos[idx], labels[idx], w)
@@ -392,7 +374,23 @@ def sgdRL(datos, labels):
   return w
 
 
-# CODIGO DEL ESTUDIANTE
+intervalo = [-2, 2]
+a, b = simula_recta(intervalo)
+
+N = 100
+datos = simula_unif(N, 2, intervalo)
+datos_hom = np.hstack((np.ones((N, 1)), datos))
+
+labels = np.empty((N, ))
+for i in range(N):
+  labels[i] = f(x[i, 0], x[i, 1], a, b)
+
+w = sgdRL(datos_hom, labels)
+
+print(
+  "% correctos RL: {}%".format(
+    getPorc(datos_hom, labels, clasifHiperplano(w))))
+scatter(datos, labels, ws = [w], labels_ws = ["RL"])
 espera()
 
 # Usar la muestra de datos etiquetada para encontrar nuestra solución g y estimar Eout
