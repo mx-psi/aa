@@ -12,15 +12,15 @@ from mpl_toolkits.mplot3d import Axes3D
 np.random.seed(1)
 
 # Establece formato unificado
-np.set_printoptions(formatter = {'all': lambda x: "{: 1.5f}".format(float(x))})
+np.set_printoptions(formatter={'all': lambda x: "{: 1.5f}".format(float(x))})
 
 
 def to_numpy(func):
   """Decorador para convertir funciones a versión NumPy"""
-  
+
   def numpy_func(w):
     return func(*w)
-  
+
   return numpy_func
 
 
@@ -61,8 +61,12 @@ def gradE(u, v):
 ###########################
 
 
-def gradient_descent(
-    initial_point, fun, grad_fun, eta, max_iter, error2get = -math.inf):
+def gradient_descent(initial_point,
+                     fun,
+                     grad_fun,
+                     eta,
+                     max_iter,
+                     error2get=-math.inf):
   """ Aproxima el mínimo de una función mediante
     el método de gradiente descendiente.
     Argumentos posicionales:
@@ -81,14 +85,14 @@ def gradient_descent(
     - Número de iteraciones que se han necesitado
     (`max_iter` si no se pasa `error2Get`)
     """
-  
+
   w = initial_point
   iterations = 0
-  
+
   while fun(w) > error2get and iterations < max_iter:
     w = w - eta*grad_fun(w)
     iterations += 1
-  
+
   return w, iterations
 
 
@@ -100,8 +104,8 @@ eta = 0.01
 maxIter = 10000000000
 error2get = 1e-14
 initial_point = np.array([1.0, 1.0])
-E_minima, it = gradient_descent(
-  initial_point, E, gradE, eta, maxIter, error2get)
+E_minima, it = gradient_descent(initial_point, E, gradE, eta, maxIter,
+                                error2get)
 
 print('Numero de iteraciones: {}'.format(it))
 print('Coordenadas obtenidas: {}'.format(E_minima))
@@ -117,25 +121,23 @@ def display_figure():
   Z = E([X, Y])  # E_w([X, Y])
   fig = plt.figure()
   ax = Axes3D(fig)
-  surf = ax.plot_surface(
-    X,
-    Y,
-    Z,
-    edgecolor = 'none',
-    rstride = 1,
-    cstride = 1,
-    cmap = 'jet',
-    alpha = 0.8)
+  surf = ax.plot_surface(X,
+                         Y,
+                         Z,
+                         edgecolor='none',
+                         rstride=1,
+                         cstride=1,
+                         cmap='jet',
+                         alpha=0.8)
   min_point = np.array([E_minima[0], E_minima[1]])
   min_point_ = min_point[:, np.newaxis]
-  ax.plot(
-    min_point_[0],
-    min_point_[1],
-    E([min_point_[0], min_point_[1]]),
-    'r*',
-    markersize = 5)
+  ax.plot(min_point_[0],
+          min_point_[1],
+          E([min_point_[0], min_point_[1]]),
+          'r*',
+          markersize=5)
   ax.set(
-    title =
+    title=
     'Ejercicio 1.2. Función sobre la que se calcula el descenso de gradiente')
   ax.set_xlabel('u')
   ax.set_ylabel('v')
@@ -185,7 +187,7 @@ resEtaGrande = np.empty((maxIter, ))
 for eta, resultados in [(0.01, resEtaPeq), (0.1, resEtaGrande)]:
   w = initial_point
   iterations = 0
-  
+
   while iterations < maxIter:
     # Guarda el resultado en la iteración actual
     resultados[iterations] = f(w)
@@ -196,8 +198,8 @@ for eta, resultados in [(0.01, resEtaPeq), (0.1, resEtaGrande)]:
 def compara_resultados():
   """Muestra curvas de decrecimiento para GD con diferentes tasas de aprendizaje."""
   print("Curvas de decrecimiento para el gradiente descendente")
-  plt.plot(resEtaPeq, 'b-o', label = r"$\eta$ = 0.01")
-  plt.plot(resEtaGrande, 'k-o', label = r"$\eta$ = 0.1")
+  plt.plot(resEtaPeq, 'b-o', label=r"$\eta$ = 0.01")
+  plt.plot(resEtaGrande, 'k-o', label=r"$\eta$ = 0.1")
   plt.legend()
   plt.show()
 
@@ -226,11 +228,11 @@ def contour_plot(min_point):
     la región en la que están los mínimos globales."""
   x = np.arange(-2, 2, 0.01)
   y = np.arange(-2, 2, 0.01)
-  xx, yy = np.meshgrid(x, y, sparse = True)
+  xx, yy = np.meshgrid(x, y, sparse=True)
   z = f([xx, yy])
-  h = plt.contourf(x, y, z, cmap = "plasma")
+  h = plt.contourf(x, y, z, cmap="plasma")
   plt.contour(x, y, xx**2 + 2*yy**2 - 2, [0])
-  plt.plot(min_point[0], min_point[1], 'r*', markersize = 5)
+  plt.plot(min_point[0], min_point[1], 'r*', markersize=5)
   plt.show()
 
 
@@ -264,10 +266,10 @@ def readData(file_x, file_y):
       else:
         y.append(label1)
       x.append(np.array([1, datax[i][0], datax[i][1]]))
-  
+
   x = np.array(x, np.float64)
   y = np.array(y, np.float64)
-  
+
   return x, y
 
 
@@ -285,7 +287,7 @@ def dErr(x, y, w):
   return 2/len(x)*(x.T.dot(x.dot(w) - y))
 
 
-def scatter(x, y = None, ws = None, labels_ws = None):
+def scatter(x, y=None, ws=None, labels_ws=None):
   """Representa scatter plot.
     Puede llamarse de 4 formas diferentes
 
@@ -295,12 +297,12 @@ def scatter(x, y = None, ws = None, labels_ws = None):
     4. scatter(x,y,ws,lab) muestra `x` con etiquetas `y` y rectas `ws`,
                            etiquetadas por `lab`
     """
-  
+
   _, ax = plt.subplots()
   xmin, xmax = np.min(x[:, 1]), np.max(x[:, 1])
   ax.set_xlim(xmin, xmax)
   ax.set_ylim(np.min(x[:, 2]), np.max(x[:, 2]))
-  
+
   if y is None:
     ax.scatter(x[:, 1], x[:, 2])
   else:
@@ -309,14 +311,13 @@ def scatter(x, y = None, ws = None, labels_ws = None):
     for cls, name in [(-1, "Clase -1"), (1, "Clase 1")]:
       # Obten los miembros de la clase
       class_members = x[y == cls]
-      
+
       # Representa en scatter plot
-      ax.scatter(
-        class_members[:, 1],
-        class_members[:, 2],
-        c = class_colors[cls],
-        label = name)
-  
+      ax.scatter(class_members[:, 1],
+                 class_members[:, 2],
+                 c=class_colors[cls],
+                 label=name)
+
   if ws is not None:
     x = np.array([xmin, xmax])
     if labels_ws is None:
@@ -324,15 +325,15 @@ def scatter(x, y = None, ws = None, labels_ws = None):
         ax.plot(x, (-w[1]*x - w[0])/w[2])
     else:
       for w, name in zip(ws, labels_ws):
-        ax.plot(x, (-w[1]*x - w[0])/w[2], label = name)
-  
+        ax.plot(x, (-w[1]*x - w[0])/w[2], label=name)
+
   if y is not None or ws is not None:
     ax.legend()
   plt.show()
 
 
 # # Gradiente Descendente Estocástico
-def sgd(x, y, eta = 0.01, max_iter = 1000, batch_size = 32):
+def sgd(x, y, eta=0.01, max_iter=1000, batch_size=32):
   """Implementa la función de gradiente descendiente estocástico
     para problemas de regresión lineal.
     Argumentos posicionales:
@@ -342,22 +343,22 @@ def sgd(x, y, eta = 0.01, max_iter = 1000, batch_size = 32):
     - eta: Tasa de aprendizaje
     - max_iter: máximo número de iteraciones
     - batch_size: tamaño del batch"""
-  
+
   w = np.zeros((3, ))
   iterations = 0
-  
+
   idxs = np.arange(len(x))  # vector de índices
   batch_start = 0  # Comienzo de la muestra
-  
+
   while iterations < max_iter:
     if batch_start == 0:  # Si empezamos una época, shuffle
       idxs = np.random.permutation(idxs)
     # Toma índices
     idx = idxs[batch_start:batch_start + batch_size]
-    
+
     w = w - eta*dErr(x[idx, :], y[idx], w)
     iterations += 1
-    
+
     # Actualiza el comienzo del batch
     batch_start += batch_size
     if batch_start > len(x):  # Si hemos llegado al final reinicia
@@ -378,7 +379,7 @@ x, y = readData('datos/X_train.npy', 'datos/y_train.npy')
 # Lectura de los datos para el test
 x_test, y_test = readData('datos/X_test.npy', 'datos/y_test.npy')
 
-w_sgd = sgd(x, y, eta = 0.01, max_iter = 20000)
+w_sgd = sgd(x, y, eta=0.01, max_iter=20000)
 print('Bondad del resultado para grad. descendente estocastico:')
 print("  Ein:  ", Err(x, y, w_sgd))
 print("  Eout: ", Err(x_test, y_test, w_sgd))
@@ -414,12 +415,12 @@ def genera_datos():
   """Genera datos aleatorios para el experimento."""
   # Genera datos aleatorios
   x = simula_unif(1000, 2, 1)
-  
+
   # Genera etiquetas (por f y por ruido)
   y_f = f_label(x[:900, :].T)
   y_rand = np.random.choice([-1, 1], 100)
   y = np.hstack((y_f, y_rand))
-  
+
   return x, y
 
 
@@ -478,13 +479,12 @@ print("BONUS")
 
 @to_numpy
 def hessianf(x, y):
-  return np.array(
-    [
-      2 - 8*np.pi**2*np.sin(2*np.pi*x)*np.sin(2*np.pi*y),
-      8*np.pi**2*np.cos(2*np.pi*x)*np.cos(2*np.pi*y),
-      8*np.pi**2*np.cos(2*np.pi*x)*np.cos(2*np.pi*y),
-      4 - 8*np.pi**2*np.sin(2*np.pi*x)*np.sin(2*np.pi*y)
-    ]).reshape((2, 2))
+  return np.array([
+    2 - 8*np.pi**2*np.sin(2*np.pi*x)*np.sin(2*np.pi*y),
+    8*np.pi**2*np.cos(2*np.pi*x)*np.cos(2*np.pi*y),
+    8*np.pi**2*np.cos(2*np.pi*x)*np.cos(2*np.pi*y),
+    4 - 8*np.pi**2*np.sin(2*np.pi*x)*np.sin(2*np.pi*y)
+  ]).reshape((2, 2))
 
 
 def newton(initial_point, fun, grad_fun, hessian, eta, max_iter):
@@ -500,16 +500,16 @@ def newton(initial_point, fun, grad_fun, hessian, eta, max_iter):
     Devuelve:
     - Mínimo hallado
     """
-  
+
   w = initial_point
   w_list = [initial_point]
   iterations = 0
-  
+
   while iterations < max_iter:
     w = w - eta*np.linalg.inv(hessian(w)).dot(grad_fun(w))
     w_list.append(w)
     iterations += 1
-  
+
   return np.array(w_list)
 
 
@@ -521,10 +521,10 @@ resEtaPeqNewton = np.apply_along_axis(
 resEtaGrandeNewton = np.apply_along_axis(
   f, 1, newton(np.array([0.1, 0.1]), f, gradf, hessianf, 0.1, 50))
 
-plt.plot(resEtaPeq, 'b-o', label = r"GD, $\eta$ = 0.01")
-plt.plot(resEtaGrande, 'k-o', label = r"GD, $\eta$ = 0.1")
-plt.plot(resEtaPeqNewton, 'g-o', label = r"Newton, $\eta$ = 0.01")
-plt.plot(resEtaGrandeNewton, 'c-o', label = r"Newton, $\eta$ = 0.1")
+plt.plot(resEtaPeq, 'b-o', label=r"GD, $\eta$ = 0.01")
+plt.plot(resEtaGrande, 'k-o', label=r"GD, $\eta$ = 0.1")
+plt.plot(resEtaPeqNewton, 'g-o', label=r"Newton, $\eta$ = 0.01")
+plt.plot(resEtaGrandeNewton, 'c-o', label=r"Newton, $\eta$ = 0.1")
 plt.legend()
 plt.show()
 
@@ -532,14 +532,12 @@ espera()
 
 print("Ejecución del método de Newton para diversos puntos iniciales:\n")
 # Cálculo de puntos del método de Newton
-initial_points = zip(
-  ["0.1, 0.1", "1,1", "-0.5, -0.5", "-1, -1"],
-  map(np.array, [[0.1, 0.1], [1, 1], [-.5, -.5], [-1, -1]]))
+initial_points = zip(["0.1, 0.1", "1,1", "-0.5, -0.5", "-1, -1"],
+                     map(np.array, [[0.1, 0.1], [1, 1], [-.5, -.5], [-1, -1]]))
 print("Punto inicial, punto final, valor final, gradiente final:")
 steps_for = {}
 for label, initial in initial_points:
   points = newton(initial, f, gradf, hessianf, 0.01, 800)
   steps_for[label] = points
-  print(
-    "{:>10}".format(label), points[-1, :], "{: 1.5f}".format(f(points[-1, :])),
-    gradf(points[-1, :]))
+  print("{:>10}".format(label), points[-1, :],
+        "{: 1.5f}".format(f(points[-1, :])), gradf(points[-1, :]))

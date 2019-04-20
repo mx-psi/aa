@@ -1,9 +1,6 @@
 [style]
 indent_width = 2
-indent_blank_lines = true
 arithmetic_precedence_indication = true
-spaces_around_default_or_named_assign = true
 split_before_dot= true
-split_before_first_argument = true
 continuation_indent_width= 2
 no_spaces_around_selected_binary_operators=*,/
