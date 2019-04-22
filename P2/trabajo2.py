@@ -58,7 +58,6 @@ def scatter(x, y=None, ws=None, labels_ws=None, title=None):
     4. scatter(x,y,ws,lab) muestra `x` con etiquetas `y` y rectas `ws`,
                            etiquetadas por `lab`
     """
-  #return None  # TODO: delete
   _, ax = plt.subplots()
   xmin, xmax = np.min(x[:, 0]), np.max(x[:, 0])
   ax.set_xlim(xmin, xmax)
@@ -165,8 +164,6 @@ scatter(x,
         labels_ws=["Frontera"],
         title="Puntos etiquetados con recta aleatoria (con ruido)")
 
-# CODIGO DEL ESTUDIANTE
-
 espera()
 
 ###############################################################################
@@ -184,7 +181,6 @@ def plot_datos_cuad(X,
                     title='Point cloud plot',
                     xaxis='x axis',
                     yaxis='y axis'):
-  return None  # TODO: delete
   # Preparar datos
   min_xy = X.min(axis=0)
   max_xy = X.max(axis=0)
@@ -306,13 +302,14 @@ def clasifHiperplano(w):
 def testPLA(x, y, max_iters=1000):
   """Prueba el algoritmo de Perceptron para un conjunto de x dado."""
 
+  print("Vector inicial cero")
   w, its = ajusta_PLA(x, y, max_iters, np.zeros(3))
 
-  print("Vector inicial cero")
   print("Iteraciones: {} épocas".format(its))
   print("% correctos: {}%".format(getPorc(x, y, clasifHiperplano(w))))
 
-  # Random initializations
+  print("Vector inicial aleatorio (media de 10 ejecuciones)")
+
   iterations = np.empty((10, ))
   percentages = np.empty((10, ))
 
@@ -321,7 +318,6 @@ def testPLA(x, y, max_iters=1000):
     iterations[i] = its
     percentages[i] = getPorc(x, y, clasifHiperplano(w))
 
-  print("Vector inicial aleatorio (media de 10 ejecuciones)")
   print('Iteraciones: {} épocas (± {:.02f})'.format(np.mean(iterations),
                                                     np.std(iterations)))
   print('% correctos: {}% (± {:.02f})'.format(np.mean(percentages),
@@ -386,15 +382,36 @@ for i in range(N):
 
 w = sgdRL(datos_hom, labels)
 
-print("% correctos RL: {}%".format(
-  getPorc(datos_hom, labels, clasifHiperplano(w))))
+print("Apartado 2.b (en ventana aparte)")
 scatter(datos, labels, ws=[w], labels_ws=["RL"])
 espera()
 
 # Usar la muestra de datos etiquetada para encontrar nuestra solución g y estimar Eout
 # usando para ello un número suficientemente grande de nuevas muestras (>999).
 
-# CODIGO DEL ESTUDIANTE
+
+def ErrRL(w, x, y):
+  """Calcula el error de un clasificador logístico para una muestra de datos.
+  Argumentos opcionales:
+  - w: Vector de pesos del clasificador logístico,
+  - x: datos en coordenadas homogéneas,
+  - y: etiquetas
+  Devuelve:
+  - El error logístico"""
+  return np.mean(np.log(1 + np.exp(-y*x.dot(w))))
+
+
+N_test = 1000
+test = simula_unif(N_test, 2, intervalo)
+test_hom = np.hstack((np.ones((N_test, 1)), test))
+
+labels_test = np.empty((N_test, ))
+for i in range(N_test):
+  labels_test[i] = f(test[i, 0], test[i, 1], a, b)
+
+print("% correctos en test RL: {}%".format(
+  getPorc(test_hom, labels_test, clasifHiperplano(w))))
+print("Error: {}".format(ErrRL(w, test_hom, labels_test)))
 
 espera()
 
@@ -432,57 +449,120 @@ x, y = readData('datos/X_train.npy', 'datos/y_train.npy', [4, 8], [-1, 1])
 x_test, y_test = readData('datos/X_test.npy', 'datos/y_test.npy', [4, 8],
                           [-1, 1])
 
-# mostramos los datos
-fig, ax = plt.subplots()
-ax.plot(np.squeeze(x[np.where(y == -1), 1]),
-        np.squeeze(x[np.where(y == -1), 2]),
-        'o',
-        color='red',
-        label='4')
-ax.plot(np.squeeze(x[np.where(y == 1), 1]),
-        np.squeeze(x[np.where(y == 1), 2]),
-        'o',
-        color='blue',
-        label='8')
-ax.set(xlabel='Intensidad promedio',
-       ylabel='Simetria',
-       title='Digitos Manuscritos (TRAINING)')
-ax.set_xlim((0, 1))
-plt.legend()
-plt.show()
-
-fig, ax = plt.subplots()
-ax.plot(np.squeeze(x_test[np.where(y_test == -1), 1]),
-        np.squeeze(x_test[np.where(y_test == -1), 2]),
-        'o',
-        color='red',
-        label='4')
-ax.plot(np.squeeze(x_test[np.where(y_test == 1), 1]),
-        np.squeeze(x_test[np.where(y_test == 1), 2]),
-        'o',
-        color='blue',
-        label='8')
-ax.set(xlabel='Intensidad promedio',
-       ylabel='Simetria',
-       title='Digitos Manuscritos (TEST)')
-ax.set_xlim((0, 1))
-plt.legend()
-plt.show()
-
-espera()
-
 # LINEAR REGRESSION FOR CLASSIFICATION
 
-# CODIGO DEL ESTUDIANTE
 
-espera()
+def Err(x, y, w):
+  """Calcula el error para un modelo de regresión lineal"""
+  wN = np.linalg.norm(x.dot(w) - y)**2
+  return wN/len(x)
+
+
+# Pseudo-inversa
+def pseudoinverse(x, y):
+  """Calcula el vector w a partir del método de la pseudo-inversa."""
+  u, s, v = np.linalg.svd(x)
+  d = np.diag([0 if np.allclose(p, 0) else 1/p for p in s])
+  return v.T.dot(d).dot(d).dot(v).dot(x.T).dot(y)
+
+
+print("Apartado 3.2 Cálculo de regresión lineal...", end="", flush=True)
+w_lin = pseudoinverse(x, y)
+print("Hecho.")
 
 # POCKET ALGORITHM
 
-# CODIGO DEL ESTUDIANTE
+
+def PLAPocket(datos, labels, max_iter, vini):
+  """Calcula el hiperplano solución al problema de clasificación binaria.
+    Argumentos posicionales:
+    - datos: matriz de datos,
+    - labels: Etiquetas,
+    - max_iter: Número máximo de iteraciones
+    - vini: Valor inicial
+  Devuelve:
+  - w, El vector de pesos y
+  - iterations el número de iteraciones."""
+  w = vini.copy()
+  w_best = w.copy()
+  err_best = Err(datos, labels, w_best)
+
+  for it in range(1, max_iter + 1):
+    w_old = w.copy()
+
+    for dato, label in zip(datos, labels):
+      if signo(w.dot(dato)) != label:
+        w += label*dato
+
+    err = Err(datos, labels, w)
+    if err < err_best:
+      w_best = w.copy()
+      err_best = err
+
+    if np.all(w == w_old):  # No hay cambios
+      return w_best, it
+
+  return w_best, it
+
+
+print("Apartado 3.2. PLAPocket a partir de RL...", end="", flush=True)
+w_pla, _ = PLAPocket(x, y, 1000, w_lin)
+print("Hecho")
+
+print("Apartado 3.2. PLAPocket a partir de vector de ceros...",
+      end="",
+      flush=True)
+w_pla_cero, _ = PLAPocket(x, y, 1000, np.random.rand(3))
+print("Hecho")
+
+rectas = [w_lin, w_pla, w_pla_cero]
+nombres = ["Regresión lineal", "PLA-Pocket (RL)", "PLA-Pocket (random)"]
+
+print("Apartado 3.2.a")
+
+scatter(x[:, 1:],
+        y,
+        ws=rectas,
+        labels_ws=nombres,
+        title='Digitos Manuscritos (TRAINING) con rectas estimadas')
+
+scatter(x_test[:, 1:],
+        y_test,
+        ws=rectas,
+        labels_ws=nombres,
+        title='Digitos Manuscritos (TEST) con rectas estimadas')
+
+espera()
+
+# ERRORES obtenidos
+
+for w_recta, nombre in zip(rectas, nombres):
+  print("Ein   para {:^18}: {}".format(nombre, Err(x, y, w_recta)))
+  print("Etest para {:^18}: {}".format(nombre, Err(x_test, y_test, w_recta)))
 
 espera()
 
 # COTA SOBRE EL ERROR
 
-# CODIGO DEL ESTUDIANTE
+
+def cota(err, N, delta):
+  """Calcula cota superior de Eout.
+  Argumentos posicionales:
+  - err: El error estimado,
+  - N: El tamaño de la muestra y
+  - delta: La tolerancia a error.
+  Devuelve:
+  - Cota superior de Eout"""
+  return err + np.sqrt(1/(2*N)*(np.log(2/delta) + 3*64*np.log(2)))
+
+
+Ein = Err(x, y, w_pla)
+Etest = Err(x_test, y_test, w_pla)
+Nin = len(x)
+Ntest = len(x_test)
+delta = 0.05
+
+print("Apartado 3.2.c (en terminal)")
+print("Cota superior de Eout   (con Ein): {}".format(cota(Ein, Nin, delta)))
+print("Cota superior de Eout (con Etest): {}".format(cota(Etest, Ntest,
+                                                          delta)))

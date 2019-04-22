@@ -160,6 +160,8 @@ Como vemos en este caso hay algunos puntos, tanto en la parte superior como en l
 
 ![Puntos clasificados respecto a una recta aleatoria con ruido](img/1.2.b.png){width=80%}
 
+\newpage
+
 ## 3. Comparación de clasificadores
 
 > Supongamos ahora que las siguientes funciones definen la frontera de clasificación de los puntos de la muestra en lugar de una recta
@@ -174,6 +176,8 @@ Como vemos en este caso hay algunos puntos, tanto en la parte superior como en l
 > funciones con las obtenidas en el caso de la recta ¿Son estas funciones más complejas
 > mejores clasificadores que la función lineal? ¿En que ganan a la función lineal? Explicar el
 > razonamiento.
+
+### Implementación
 
 Nos apoyamos en la función `plot_datos_cuad` proporcionada en la plantilla.
 Además definimos la función `getPorc`, que obtiene el porcentaje de `datos` correctamente clasificados (de acuerdo a `labels`) por un `clasificador`. El cuerpo de la función es (omitiendo comentarios):
@@ -205,6 +209,8 @@ for f, title in clasificadores:
   print("Correctos para '{}': {}".format(title, getPorc(x, y_noise, f)))
 ```
 
+### Resultados y análisis
+
 Los resultados de porcentaje de acierto pueden verse en la siguiente tabla:
 
 | Clasificador | % de acierto |
@@ -215,9 +221,22 @@ Los resultados de porcentaje de acierto pueden verse en la siguiente tabla:
 | Elipse 3     |   40%        |
 | Parábola     |   76%        |
 
-Los gráficos pueden verse en las figuras.
+Los gráficos pueden verse en las figuras 5,6,7,8 y 9.
+Como vemos, aunque los clasificadores como elipses o parábolas son más complejos,
+no son en este caso más precisos en su clasificación, ya que no se ajustan a la distribución de los datos.
+Concluimos por tanto que debemos escoger un clasificador que se ajuste a esta distribución sin llegar al sobreajuste.
 
+![Clasificador 1 (recta)](img/1.3.1.png){width=82%}
 
+![Clasificador 2 (elipse)](img/1.3.2.png){width=82%}
+
+![Clasificador 3 (elipse)](img/1.3.3.png){width=82%}
+
+![Clasificador 4 (elipse)](img/1.3.4.png){width=82%}
+
+![Clasificador 5 (parábola)](img/1.3.5.png){width=82%}
+
+\newpage
 
 # 2. Modelos lineales
 ## 1. Algoritmo Perceptron
@@ -433,6 +452,52 @@ def sgdRL(datos, labels, eta = 0.01):
 ### b) Usar la muestra de datos etiquetada para encontrar nuestra solución $g$ y estimar $E_{\operatorname{out}}$ usando para ello un número suficientemente grande de nuevas muestras ($>999$).
 
 
+#### Implementación
+
+Para generar los datos de test seguimos el procedimiento análogo a la generación de los datos de training, es decir
+```python
+N_test = 1000
+test = simula_unif(N_test, 2, intervalo)
+test_hom = np.hstack((np.ones((N_test, 1)), test))
+
+labels_test = np.empty((N_test, ))
+for i in range(N_test):
+  labels_test[i] = f(test[i, 0], test[i, 1], a, b)
+```
+
+A continuación debemos definir una función que calcule el error.
+He decidido calcularlo de dos formas.
+En primer lugar la log-verosimilitud 
+(que es la función de la que obtenemos el gradiente utilizado en el algoritmo), dada por,
+$$E(w) = \frac{1}{N} \sum_{n = 1}^N \log(1 + \exp(-y_nw^T\mathbf{x}_n)),$$
+cuya traducción a código de NumPy es directa:
+```python
+def Err(w, x, y):
+  return np.mean(np.log(1 + np.exp(-y*x.dot(w))))
+```
+Además, en segundo lugar también lo mostramos como porcentaje clasificado incorrectamente.
+
+Por último mostramos el error, así como el porcentaje clasificado incorrectamente,
+```python
+print("% correctos en test RL: {}%".format(
+  getPorc(test_hom, labels_test, clasifHiperplano(w))))
+print("Error: {}".format(Err(w, test_hom, labels_test)))
+```
+
+
+#### Análisis de resultados
+
+Redondeando a 5 cifras significativas, el error para la solución obtenida queda
+$$E_{\operatorname{out}}(w) = 0.06741,$$
+y el porcentaje de puntos de la muestra de test clasificados correctamente es de $99.3$%.
+
+Como vemos el algoritmo proporciona muy buenos resultados en estas condiciones.
+He incluido una representación de la recta con los puntos en la figura 10.
+
+![Recta obtenida por la regresión logística](img/2.2.b.png){width=70%}
+
+\newpage
+
 # 3. Bonus
 
 ## Clasificación de dígitos
@@ -444,14 +509,138 @@ def sgdRL(datos, labels, eta = 0.01):
 
 ### 1. Plantear un problema de clasificación binaria que considere el conjunto de entrenamiento como datos de entrada para aprender la función $g$.
 
+Tal y como aparece en la plantilla, el objetivo es la clasificación en las clases de dígitos 4 y 8 (que representamos respectivamente por -1 y 1) a partir de sus características de intensidad promedio y simetría.
+
+Este apartado ya está hecho en la plantilla proporcionada.
+Los datos y etiquetas de training se guardan en `x` e `y` respectivamente, y los de test en `x_test` e `y_test`.
+
 ### 2. Usar un modelo de Regresión Lineal y aplicar PLA-Pocket como mejora. Responder a las siguientes cuestiones.
+
+#### Implementación
+
+Recordamos la función de error de la regresión lineal, que necesitábamos en la práctica 1,
+```python
+def Err(x, y, w):
+  wN = np.linalg.norm(x.dot(w) - y)**2
+  return wN/len(x)
+```
+
+Además, para regresión lineal podemos utilizar cualquiera de los dos algoritmos que utilizamos en la práctica anterior. Optamos por el algoritmo de la pseudoinversa.
+```python
+def pseudoinverse(x, y):
+  u, s, v = np.linalg.svd(x)
+  d = np.diag([0 if np.allclose(p, 0) else 1/p for p in s])
+  return v.T.dot(d).dot(d).dot(v).dot(x.T).dot(y)
+```
+
+****
+
+Podemos adaptar el algoritmo de `ajusta_PLA` para hacer la función `PLAPocket`, que tomará los mismos argumentos.
+
+Añadimos dos variables, `w_best` y `err_best` que guardan el mejor clasificador encontrado hasta el momento y su valor de error, inicializados a
+```python
+w_best   = w
+err_best = Err(datos, labels, w_best)
+```
+
+A continuación, en el bucle principal añadimos la comprobación de si el vector actual de pesos mejora la clasificación,
+```python
+err = Err(datos, labels, w)
+if err < err_best:
+  max_w = w
+  err_best = err
+```
+
+El código completo de la función queda
+
+```python
+def PLAPocket(datos, labels, max_iter, vini):
+  w = vini.copy()
+  w_best   = w
+  err_best = Err(datos, labels, w_best)
+
+  for it in range(1, max_iter + 1):
+    w_old = w.copy()
+
+    for dato, label in zip(datos, labels):
+      if signo(w.dot(dato)) != label:
+        w += label*dato
+
+    err = Err(datos, labels, w)
+    if err < err_best:
+      max_w = w
+      err_best = err
+
+    if np.all(w == w_old):  # No hay cambios
+      return max_w, it
+
+  return max_w, it
+```
 
 #### a) Generar gráficos separados (en color) de los datos de entrenamiento y test junto con la función estimada.
 
+Hacemos tres estimaciones; la estimación de la pseudoinversa, la mejora de esta por `PLAPocket` y `PLAPocket` usando un vector inicial aleatorio.
+
+Las ejecuciones de `PLAPocket` las hacemos con un máximo de 1000 iteraciones.
+Los resultados pueden verse en las figuras 11 y 12.
+
+![Ajuste lineal y PLA-Pocket sobre datos de dígitos manuscritos (training)](img/3.2.1.png){width=82%}
+
+![Ajuste lineal y PLA-Pocket sobre datos de dígitos manuscritos (test)](img/3.2.2.png){width=82%}
+
+
+Como vemos, la mejora de PLA-Pocket es indistinguible de la solución obtenida mediante regresión lineal.
+
 #### b) Calcular $E_{\operatorname{in}}$ y $E_{\operatorname{test}}$ (error sobre los datos de test).
+
+Los errores obtenidos pueden verse en la siguiente tabla:
+
+| **Error** | Regresión Lineal | PLA-Pocket (RL) | PLA-Pocket (random) |
+|-------|------------------|-----------------|---------------------|
+| $E_{\operatorname{in}}$ | 0.90033 | 0.90033 | 6.29156 |
+| $E_{\operatorname{test}}$ | 0.93745 | 0.93745 | 6.77846|
+
+Como podíamos apreciar en la figura del apartado anterior, PLA-Pocket no consigue reducir el error de la regresión lineal ni consigue buenos resultados en el caso aleatorio.
+Esto probablemente sea debido a que los datos del dataset con el que trabajamos no son separables.
 
 #### c) Obtener cotas sobre el verdadero valor de $E_{\operatorname{out}}$ . Pueden calcularse dos cotas una basada en $E_{\operatorname{in}}$ y otra basada en $E_{\operatorname{test}}$ . Usar una tolerancia $\delta= 0.05$. ¿Que cota es mejor?
 
+Calculo la cota sobre el error sólo en el caso PLA-Pocket (RL).
+
+Aplicamos la fórmula de la cota del error, que podemos traducir a una función NumPy de forma directa.
+La fórmula, para una clase de hipótesis finita $\mathcal{H}$ es
+$$E_{\operatorname{out}}(h) \leq E_{\operatorname{in}}(h) + \sqrt{\frac{1}{2N} \log\left(\frac{2|\mathcal{H}|}{\delta}\right)}.$$
+
+Si discretizamos el problema podemos ver que el número de hipótesis en la clase es el número de vectores de 3 flotantes de 64 bits, por lo que $|\mathcal{H}| = 3\cdot 2^{64}$ y la cota puede calcularse con la función,
+```python
+def bound(err, N, delta):
+  return err + np.sqrt(1/(2*N)*(np.log(2/delta) + 3*64*np.log(2)))
+```
+Alternativamente podríamos usar la fórmula con la dimensión VC.
+
+Para el cálculo de la cota sobre el error basta entonces calcular Ein y Etest y pasar como argumentos el tamaño de muestra (`N`) y la tolerancia (`delta`),
+```python
+Ein = Err(x, y, w_pla)
+Etest = Err(x_test, y_test, w_pla)
+Nin = len(x)
+Ntest = len(x_test)
+delta = 0.05
+
+print("Apartado 3.2.c (en terminal)")
+print("Cota superior de Eout (con Ein): {}".format(bound(Ein, Nin, delta)))
+print("Cota superior de Eout (con Etest): {}".format(bound(
+  Etest, Ntest, delta)))
+```
+
+Las cotas obtenidas son (redondeando a 5 cifras decimales)
+
+- con $E_{\operatorname{in}}$, 0.88218 y
+- con $E_{\operatorname{test}}$, 1.14097.
+
+Es posible que las cotas fueran más informativas si usáramos la fórmula de la dimensión VC.
+La cota a partir de los datos de test es más precisa, ya que es una muestra independiente de los datos utilizados para obtener el clasificador.
+
+\newpage
 
 # Apéndice: `scatter`
 
@@ -473,23 +662,22 @@ Inicialmente fijamos los límites del gráfico:
 
 ```python
 _, ax = plt.subplots()
-xmin, xmax = np.min(x[:,1]), np.max(x[:,1])
+xmin, xmax = np.min(x[:,0]), np.max(x[:,0])
 ax.set_xlim(xmin, xmax)
-ax.set_ylim(np.min(x[:,2]),np.max(x[:,2]))
+ax.set_ylim(np.min(x[:,1]),np.max(x[:,1]))
 ```
 
-A continuación, si no hay clases mostramos simplemente los puntos (`ax.scatter(x[:,1], x[:,2])`) y en otro caso los mostramos siguiendo el código que implementé para la práctica 0:
+A continuación, si no hay clases mostramos simplemente los puntos (`ax.scatter(x[:,0], x[:,1])`) y en otro caso los mostramos siguiendo el código que implementé para la práctica 0:
 
 ```python
 class_colors = {-1 : 'green', 1 : 'blue'}
-# Para cada clase:
 for cls, name in [(-1,"Clase -1"), (1,"Clase 1")]:
   # Obten los miembros de la clase
   class_members = x[y == cls]
   
   # Representa en scatter plot
-  ax.scatter(class_members[:,1],
-             class_members[:,2],
+  ax.scatter(class_members[:,0],
+             class_members[:,1],
              c = class_colors[cls],
              label = name)
 ```
