@@ -1,7 +1,8 @@
 AA/
-P1/img
+*.png
 *.zip
 *.pdf
+*.npy
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
