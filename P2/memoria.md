@@ -603,6 +603,8 @@ Los errores obtenidos pueden verse en la siguiente tabla:
 Como podíamos apreciar en la figura del apartado anterior, PLA-Pocket no consigue reducir el error de la regresión lineal ni consigue buenos resultados en el caso aleatorio.
 Esto probablemente sea debido a que los datos del dataset con el que trabajamos no son separables.
 
+\newpage
+
 #### c) Obtener cotas sobre el verdadero valor de $E_{\operatorname{out}}$ . Pueden calcularse dos cotas una basada en $E_{\operatorname{in}}$ y otra basada en $E_{\operatorname{test}}$ . Usar una tolerancia $\delta= 0.05$. ¿Que cota es mejor?
 
 Calculo la cota sobre el error sólo en el caso PLA-Pocket (RL).
