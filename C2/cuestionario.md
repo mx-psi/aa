@@ -71,9 +71,12 @@ La incertidumbre y precisión vienen de que la solución sea *probablemente apro
 
 No podemos descartar estos parámetros (esto es, no podemos tener certeza y precisión absoluta fijando $\varepsilon = 0, \delta = 0$) ya que siempre existe la posibilidad de que las muestras no sean representativas (sólo tenemos una cota probable del error usando la desigualdad de Hoeffding).
 
+
+\newpage
+
 # Pregunta 4
 
-> Suponga un conjunto de datos $\mathcal{D}$ de 25 ejemplos extraidos de una funcion desconocida
+> Suponga un conjunto de datos $\mathcal{D}$ de 25 ejemplos extraidos de una función desconocida
 > $f : \mathcal{X} \to \mathcal{Y}$, donde $\mathcal{X} = \mathbb{R}$ 
 > e $\mathcal{Y} = \{-1, +1\}$. Para aprender $f$ usamos un conjunto simple
 > de hipótesis $\mathcal{H} = \{h_1 , h_2\}$ donde $h_1$ es la función constante igual a $+1$ y $h_2$ la función
@@ -81,7 +84,10 @@ No podemos descartar estos parámetros (esto es, no podemos tener certeza y prec
 > elige la hipótesis que mejor ajusta los datos y C elige deliberadamente la otra hipótesis.
 
 ## a) ¿Puede S producir una hipótesis que garantice mejor comportamiento que la aleatoria sobre cualquier punto fuera de la muestra?
-Justificar la respuesta
+
+**No**, no podemos *garantizar* el mejor comportamiento, ya que el conjunto de datos $\mathcal{D}$ se ha producido mediante un proceso aleatorio por lo que es posible que los datos no sean representativos de la distribución total sobre $\mathcal{X}$.
+
+Podemos dar una cota del error mediante la desigualdad generalizada de Hoeffding al encontrarnos con una clase finita de hipótesis, pero esta cota no está garantizada: sólo es cierta aceptando una cierta incertidumbre prefijada, que dependerá de la precisión $\varepsilon$ y del tamaño de la muestra (25 en este caso).
 
 
 # Pregunta 5
@@ -90,8 +96,11 @@ Justificar la respuesta
 
 ## a) Asumir desde ahora que todos los ejemplos en $\mathcal{D}$ tienen $y_n = +1$. ¿Es posible que la hipotesis que produce C sea mejor que la hipótesis que produce S?
 
-Justificar la respuesta
+**Sí**, cabe la posibilidad de que la hipótesis producida por $C$ sea mejor que la producida por $S$, 
+ya que de nuevo nos hallamos ante un proceso aleatorio en el que los datos podrían no ser representativos.
 
+Sin embargo, si los datos han sido generados bajo las condiciones de la desigualdad generalizada de Hoeffding la probabilidad de que los errores empíricos de ambas hipótesis sean lejanos al error real es muy baja.
+Estas estimaciones nos dicen que S tiene un error empírico mucho menor que $C$ (que clasificaría incorrectamente todos los ejemplos de la muestra), por lo que, con alta probabilidad la hipótesis que produce C sería pero que la que produce S.
 
 
 # Pregunta 6
@@ -101,31 +110,70 @@ Justificar la respuesta
 > hipótesis,
 > $$P[|E_{\operatorname{out}}(g) - E_{\operatorname{in}} (g)| > \varepsilon) < \delta$$
 
-## a) ¿Cuál es el algoritmo de aprendizaje que se usa para elegir g?
-## b) Si elegimos g de forma aleatoria ¿seguiría verificando la desigualdad?
-## c) ¿Depende g del algoritmo usado?
+## a) ¿Cuál es el algoritmo de aprendizaje que se usa para elegir $g$?
+
+Seguimos el criterio ERM, es decir, escogemos de entre todas las hipótesis de la clase $\mathcal{H}$, aquella $g$ que minimice $E_{\operatorname{in}}$, ya que sabemos que, con probabilidad $1 - \delta$, la distancia entre este error empírico y el error real será menor que la precisión fijada $\varepsilon$.
+
+## b) Si elegimos $g$ de forma aleatoria ¿seguiría verificando la desigualdad?
+
+Sí, como nos hallamos en una clase de hipótesis finita la cota de probabilidad a partir de la desigualdad (generalizada) de Hoeffding se aplica de forma uniforme a todas las hipótesis de la clase. 
+
+Es decir, el error empírico de cualquier hipótesis $g$ es una estimación del error real de $g$ (bajo las condiciones de la desigualdad descritas en el apartado anterior).
+
+## c) ¿Depende $g$ del algoritmo usado?
+
+Sí, $g$ puede depender del algoritmo utilizado, por ejemplo si utilizamos otro criterio que no sea el de minimización de riesgo empírico (sino que añadimos alguna medida de regularización).
+
 ## d) Es una cota ajustada o una cota laxa?
+
+La cota del error que proporciona la desigualdad generalizada de Hoeffding para una clase finita de hipótesis es una cota **laxa**, ya que la desigualdad se obtiene mediante la subaditividad de la probabilidad, esto es, si $E_1, \dots, E_n$ son eventos, se cumple
+$$P\left[\bigcup_{i = 1}^n E_i \right] \leq \sum_{i = 1}^n P[E_i].$$
+
+Pero esta desigualdad no es muy ajustada, ya que si los eventos aleatorios $E_1,\dots, E_n$ tienen intersección probable estaremos sumando de más. Por tanto no obtenemos mucha información de esta cota del error (más allá de su comportamiento cuando el tamaño de la muestra tiende a infinito).
 
 # Pregunta 7
 
 > ¿Por qué la desigualdad de Hoeffding definida para clases $\mathcal{H}$ de una única función no es
 > aplicable de forma directa cuando el número de hipótesis de $\mathcal{H}$ es mayor de 1?
 
-No podemos aplicar la desigualdad de forma directa porque la hipótesis debe estar fijada de antemano.
+No podemos aplicar la desigualdad de forma directa porque la hipótesis a la que se la aplicamos debe estar fijada de antemano y en el caso de tener una clase de hipótesis con $|\mathcal{H}| > 1$ la hipótesis no está fijada sino que se escoge por el algoritmo de aprendizaje en función de los datos. 
+
+Si pudiéramos cambiar la hipótesis después de observar el conjunto de datos no se cumplirían las precondiciones necesarias para la desigualdad y por tanto debemos ajustarla para que esto se cumpla.
+
+En el caso de una clase de hipótesis finita podemos aplicar la subaditividad de la función de probabilidad para ver que una posible cota es $2|\mathcal{H}|e^{-2\varepsilon^2N}$ donde $\varepsilon$ es la precisión y $N$ el número de muestras. Una clase de hipótesis infinita requerirá del uso de la dimensión VC.
 
 # Pregunta 8
 
 > Si queremos mostrar que $k^\ast$ es un punto de ruptura para una clase de funciones H cuales
 > de las siguientes afirmaciones nos servirían para ello:
 
+Un punto de ruptura para la clase de hipótesis $\mathcal{H}$ es un entero $k^\ast$ tal que no podemos separar cualquier conjunto de $k^\ast$ puntos.
+
 ## a) Mostrar que existe un conjunto de $k^\ast$ puntos $x_1, \dots, x_{k^\ast}$ que $\mathcal{H}$ puede separar («shatter»).
+
+**No** nos serviría, ya que un punto de ruptura es aquel para el que todo conjunto de ese cardinal **no** puede separarse.
+
+Por ejemplo los perceptrones 2D pueden separar cualquier conjunto de $k^\ast = 2$ puntos, pero este no es su punto de ruptura.
+
 
 ## b) Mostrar que $\mathcal{H}$ puede separar cualquier conjunto de $k^{\ast}$ puntos.
 
+**No** nos serviría, ya que lo que queremos es encontrar un punto en el que no podamos separar ningún conjunto de ese cardinal.
+De nuevo el ejemplo de los perceptrones 2D sirve.
+
 ## c) Mostrar un conjunto de $k^\ast$ puntos $x_1, \dots, x_{k^\ast}$ que $\mathcal{H}$ no puede separar
+
+**No** nos serviría para mostrar que es un punto de ruptura, tenemos que no poder separar ningún conjunto de ese tamaño (y no sólo uno).
+
 ## d) Mostrar que $\mathcal{H}$ no puede separar ningún conjunto de $k^\ast$ puntos
+
+**Sí** nos serviría, esta es exactamente la condición que buscamos.
+
+Por ejemplo los «rayos positivos» en $\mathbb{R}$ (esto es, las hipótesis de la forma $\operatorname{sgn}(x-w_0)$) no pueden separar ningún conjunto de 4 puntos, pero tampoco ninguno de 3.
+
 ## e) Mostrar que $m_{\mathcal{H}}(k) = 2^{k^\ast}$
 
+**No** nos serviría, esto indica que hay algún conjunto de $k$ puntos que podemos separar, y lo que buscamos es no poder separar ninguno.
 
 # Pregunta 9
 
@@ -152,3 +200,20 @@ Por tanto, tenemos que necesitamos un tamaño muestral de al menos 452957 muestr
 > que encuentre la función que mejor ajuste dichos datos. Dado que desconoce la verdadera
 > función $f$, discuta los pros y contras de aplicar los principios de inducción ERM y SRM
 > para lograr el objetivo. Valore las consecuencias de aplicar cada uno de ellos.
+
+En el caso de **ERM** (del inglés *Empirical Risk Minimization*) fijamos una clase de hipótesis $\mathcal{H}$ y tomamos la hipótesis que minimice el *error empírico* $E_{\operatorname{in}}$ sobre la muestra que tenemos.
+
+Si la muestra es suficientemente grande, independiente idénticamente distribuida y proveniente de la distribución que queremos aprender y la clase de hipótesis tiene dimensión VC finita podemos asegurar con alta probabilidad que esta hipótesis tiene un error real $E_{\operatorname{out}}$ cercano al mínimo posible.
+
+El conjunto de clases de hipótesis que podemos considerar con este criterio es reducido ya que la clase de hipótesis debe tener dimensión VC finita. A cambio minimizamos el error real sin restricciones.
+
+Este criterio es útil bajo las condiciones anteriormente mencionadas. 
+Bajo estas condiciones su principal ventaja es su simplicidad.
+pero si el tamaño de la muestra es pequeño o consideramos que no podemos escoger ninguna clase de hipótesis suficientemente diversa podría no ser el ideal.
+
+Por otro lado, en el principio de inducción **SRM** (del inglés *Structural Risk Minimization*) tenemos una clase de hipótesis que puede definirse como unión de una cantidad numerable de subclases $$\mathcal{H} = \bigcup_{n \in \mathbb{N}} \mathcal{H}_n$$ de tal forma que cada subclase tenga dimensión VC finita.
+
+Debemos escoger una hipótesis que minimice la suma del error empírico $E_{\operatorname{in}}$ y una penalización por la complejidad del modelo $\Omega(\mathcal{H}_n)$. De esta forma minimizamos a la vez la complejidad de la hipótesis elegida (minimizando la penalización) y el error empírico de la muestra, para lo que podemos fijar la complejidad del modelo y minimizar el error o fijar el error y minimizar la complejidad.
+Bajo ciertas condiciones esto minimizará el error real.
+
+Este criterio tiene como ventaja que las clases de hipótesis consideradas pueden ser más generales; el ejemplo más sencillo es considerar los polinomios de cualquier grado. Su desventaja es su mayor complejidad a la hora de implementarse y el hecho de que la muestra necesaria depende de la función.
