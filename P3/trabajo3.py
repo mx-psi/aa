@@ -33,3 +33,33 @@ def lee_datos(filename, delimiter):
 
 digitos_tra_x, digitos_tra_y = lee_datos(OPTDIGITS, delimiter=",")
 airfoil_x, airfoil_y = lee_datos(AIRFOIL, delimiter="\t")
+
+
+def elimina_corr(data, threshold=0.75):
+  """Elimina variables que estén muy correlacionadas entre sí.
+  Argumentos posicionales:
+  - data: Datos de entrada
+  Argumentos opcionales:
+  - threshold: El umbral de correlación a partir del cual eliminar
+  Devuelve:
+  - Los datos con una de las columnas correlacionadas eliminada
+  """
+
+  corr_matrix = np.corrcoef(data.T)
+  correlated = np.argwhere(corr_matrix > threshold)
+
+  idxs = list(range(data.shape[1]))
+  for i, j in correlated:
+    if i < j:
+      try:
+        idxs.remove(i)
+      except ValueError:
+        pass
+  return data[:, idxs]
+
+
+print(airfoil_x.shape)
+print(elimina_corr(airfoil_x).shape)
+
+print(digitos_tra_x.shape)
+print(elimina_corr(digitos_tra_x).shape)
