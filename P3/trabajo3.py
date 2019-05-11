@@ -6,6 +6,9 @@ Nombre Estudiante: Pablo Baeyens Fernández
 import math
 import numpy as np
 import matplotlib.pyplot as plt
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
+from sklearn.pipeline import Pipeline
 
 # Fijamos la semilla
 np.random.seed(0)
@@ -31,11 +34,8 @@ def lee_datos(filename, delimiter):
   return data[:, :-1], data[:, -1]
 
 
-digitos_tra_x, digitos_tra_y = lee_datos(OPTDIGITS, delimiter=",")
-airfoil_x, airfoil_y = lee_datos(AIRFOIL, delimiter="\t")
-
-
-def elimina_corr(data, threshold=0.75):
+## FIXME: Conveertir en algo de aquí https://scikit-learn.org/stable/modules/classes.html#module-sklearn.feature_selection
+def eliminador_corr(data, threshold=0.95):
   """Elimina variables que estén muy correlacionadas entre sí.
   Argumentos posicionales:
   - data: Datos de entrada
@@ -55,11 +55,28 @@ def elimina_corr(data, threshold=0.75):
         idxs.remove(i)
       except ValueError:
         pass
-  return data[:, idxs]
 
+  def elimina(datos):
+    return datos[:, idxs]
+
+  return elimina
+
+
+## PREPROCESADO
+
+digitos_tra_x, digitos_tra_y = lee_datos(OPTDIGITS, delimiter=",")
+airfoil_x, airfoil_y = lee_datos(AIRFOIL, delimiter="\t")
+
+## FIXME: ¿Tiene sentido añadir VarianceThreshold ?
+preprocesado = [("escalado", StandardScaler()),
+                ("PCA", PCA(n_components=0.95))]
+
+clasificador = Pipeline(preprocesado)
 
 print(airfoil_x.shape)
-print(elimina_corr(airfoil_x).shape)
+clasificador.fit(airfoil_x, airfoil_y)
+print(clasificador.transform(airfoil_x).shape)
 
 print(digitos_tra_x.shape)
-print(elimina_corr(digitos_tra_x).shape)
+clasificador.fit(digitos_tra_x, digitos_tra_y)
+print(clasificador.transform(digitos_tra_x).shape)
