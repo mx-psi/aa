@@ -52,6 +52,25 @@ El único dato de salida es el sonido generado (*scaled sound pressure level*) e
 
 Los datos no tienen ningún tipo de preprocesamiento.
 
+## Obtención de los datos
+
+Los datos de cada problema se guardan en su carpeta, que se llaman `optdigits` y `airfoil` para los problemas de clasificación y regresión respectivamente.
+He utilizado la versión preprocesada y dividida en training y test en el caso del problema de clasificación de dígitos.
+He conservado los nombres de los ficheros originales en todos los casos.
+
+Para crear la carpeta de `datos` con la estructura que he utilizado puede ejecutarse los siguientes comandos, disponibles en el script adjunto `descarga_datos.sh`:
+
+```sh
+mkdir -p datos/optdigits
+wget https://archive.ics.uci.edu/ml/machine-learning-databases/optdigits/optdigits.tra -O datos/optdigits/optdigits.tra
+wget https://archive.ics.uci.edu/ml/machine-learning-databases/optdigits/optdigits.tes -O datos/optdigits/optdigits.tes
+
+mkdir -p datos/airfoil
+wget https://archive.ics.uci.edu/ml/machine-learning-databases/00291/airfoil_self_noise.dat -O datos/airfoil/airfoil_self_noise.dat
+```
+
+Alternativamente, pueden modificarse las constantes `DIGITS_TRA`, `DIGITS_TEST` y `AIRFOIL` que aparecen al comienzo del archivo para modifcar el lugar del que se obtienen los datos.
+
 ## Visualización de los datos
 
 # Preprocesado de los datos

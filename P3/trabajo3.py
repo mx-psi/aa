@@ -9,13 +9,17 @@ import matplotlib.pyplot as plt
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from sklearn.pipeline import Pipeline
+from sklearn.feature_selection import VarianceThreshold
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
 
 # Fijamos la semilla
 np.random.seed(0)
 
 ## CONSTANTES MODIFICABLES
 
-OPTDIGITS = "datos/optdigits/optdigits.tra"
+DIGITS_TRA = "datos/optdigits/optdigits.tra"
+DIGITS_TEST = "datos/optdigits/optdigits.tes"
 AIRFOIL = "datos/airfoil/airfoil_self_noise.dat"
 
 
@@ -34,49 +38,59 @@ def lee_datos(filename, delimiter):
   return data[:, :-1], data[:, -1]
 
 
-## FIXME: Conveertir en algo de aquí https://scikit-learn.org/stable/modules/classes.html#module-sklearn.feature_selection
-def eliminador_corr(data, threshold=0.95):
-  """Elimina variables que estén muy correlacionadas entre sí.
-  Argumentos posicionales:
-  - data: Datos de entrada
-  Argumentos opcionales:
-  - threshold: El umbral de correlación a partir del cual eliminar
-  Devuelve:
-  - Los datos con una de las columnas correlacionadas eliminada
-  """
+# ## FIXME: Conveertir en algo usable por el pipeline?
+# def eliminador_corr(data, threshold=0.95):
+#   """Elimina variables que estén muy correlacionadas entre sí.
+#   Argumentos posicionales:
+#   - data: Datos de entrada
+#   Argumentos opcionales:
+#   - threshold: El umbral de correlación a partir del cual eliminar
+#   Devuelve:
+#   - Los datos con una de las columnas correlacionadas eliminada
+#   """
 
-  corr_matrix = np.corrcoef(data.T)
-  correlated = np.argwhere(corr_matrix > threshold)
+#   corr_matrix = np.corrcoef(data.T)
+#   correlated = np.argwhere(corr_matrix > threshold)
 
-  idxs = list(range(data.shape[1]))
-  for i, j in correlated:
-    if i < j:
-      try:
-        idxs.remove(i)
-      except ValueError:
-        pass
+#   idxs = list(range(data.shape[1]))
+#   for i, j in correlated:
+#     if i < j:
+#       try:
+#         idxs.remove(i)
+#       except ValueError:
+#         pass
 
-  def elimina(datos):
-    return datos[:, idxs]
+#   def elimina(datos):
+#     return datos[:, idxs]
 
-  return elimina
+#   return elimina
 
+## Training y Test
+
+digitos_tra_x, digitos_tra_y = lee_datos(DIGITS_TRA, delimiter=",")
+digitos_test_x, digitos_test_y = lee_datos(DIGITS_TEST, delimiter=",")
+
+airfoil_x, airfoil_y = lee_datos(AIRFOIL, delimiter="\t")
+airfoil_tra_x, airfoil_test_x, airfoil_tra_y, airfoil_test_y = train_test_split(
+  airfoil_x, airfoil_y, test_size=0.25)
 
 ## PREPROCESADO
 
-digitos_tra_x, digitos_tra_y = lee_datos(OPTDIGITS, delimiter=",")
-airfoil_x, airfoil_y = lee_datos(AIRFOIL, delimiter="\t")
-
-## FIXME: ¿Tiene sentido añadir VarianceThreshold ?
-preprocesado = [("escalado", StandardScaler()),
+preprocesado = [("varianza", VarianceThreshold(threshold=0.0)),
+                ("escalado", StandardScaler()),
                 ("PCA", PCA(n_components=0.95))]
 
-clasificador = Pipeline(preprocesado)
+## CLASIFICACIÓN
 
-print(airfoil_x.shape)
-clasificador.fit(airfoil_x, airfoil_y)
-print(clasificador.transform(airfoil_x).shape)
+clasificacion = [("logistic",
+                  LogisticRegression(penalty='l2',
+                                     solver='sag',
+                                     max_iter=400,
+                                     multi_class='multinomial'))]
 
-print(digitos_tra_x.shape)
+clasificador = Pipeline(preprocesado + clasificacion)
+
 clasificador.fit(digitos_tra_x, digitos_tra_y)
-print(clasificador.transform(digitos_tra_x).shape)
+print(clasificador.score(digitos_test_x, digitos_test_y))
+
+## REGRESIÓN
