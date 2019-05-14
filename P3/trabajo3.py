@@ -12,6 +12,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.feature_selection import VarianceThreshold
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
+from sklearn.manifold import TSNE
 
 # Fijamos la semilla
 np.random.seed(0)
@@ -27,54 +28,51 @@ def espera():
   input("\n--- Pulsar tecla para continuar ---\n")
 
 
-def scatter(x,
-            y=None,
-            style="Classification",
-            ws=None,
-            labels_ws=None,
-            title=None):
-  """Representa scatter plot.
-    Puede llamarse de 4 formas diferentes
+def pregunta(pregunta, default="s"):
+  """Haz una pregunta de sí o no."""
 
-    1. scatter(x)          muestra `x` en un scatter plot
-    2. scatter(x,y)        muestra `x` con etiquetas `y` (-1 y 1)
-    3. scatter(x,y,ws)     muestra `x` con etiquetas `y` y rectas `ws`
-    4. scatter(x,y,ws,lab) muestra `x` con etiquetas `y` y rectas `ws`,
-                           etiquetadas por `lab`
-    """
+  if default == "n":
+    msg = pregunta + " s/[n]: "
+  else:
+    msg = pregunta + " [s]/n: "
+
+  while True:
+    texto = input(msg).lower()
+    texto = default if texto == '' else texto
+    if texto.startswith('s') or texto.startswith('y'):
+      return True
+    elif texto.startswith('n'):
+      return False
+
+
+def visualizaClasif(x, y, title=None):
+  """Representa conjunto de puntos 2D clasificados.
+  Argumentos posicionales:
+  - x: Coordenadas 2D de los puntos
+  - y: Etiquetas"""
+
   _, ax = plt.subplots()
+
+  # Establece límites
   xmin, xmax = np.min(x[:, 0]), np.max(x[:, 0])
-  ax.set_xlim(xmin, xmax)
-  ax.set_ylim(np.min(x[:, 1]), np.max(x[:, 1]))
+  ax.set_xlim(xmin - 1, xmax + 1)
+  ax.set_ylim(np.min(x[:, 1]) - 1, np.max(x[:, 1]) + 1)
 
-  if y is None:
-    ax.scatter(x[:, 0], x[:, 1])
-  elif style == "Classification":
-    ax.scatter(x[:, 0], x[:, 1], c=y, cmap="tab10", alpha=0.8)
+  # Pinta puntos
+  ax.scatter(x[:, 0], x[:, 1], c=y, cmap="tab10", alpha=0.8)
 
-    labels = np.unique(y)
-    for label in labels:
-      center = np.mean(x[y == label], axis=0)
-      ax.annotate(int(label),
-                  center,
-                  size=15,
-                  weight="bold",
-                  color="white",
-                  backgroundcolor="black")
-  elif style == "Regression":
-    ax.scatter(x[:, 0], x[:, 1], c=y, cmap="viridis", alpha=0.8)
+  # Pinta etiquetas
+  labels = np.unique(y)
+  for label in labels:
+    center = np.mean(x[y == label], axis=0)
+    ax.annotate(int(label),
+                center,
+                size=14,
+                weight="bold",
+                color="white",
+                backgroundcolor="black")
 
-  if ws is not None:
-    x = np.array([xmin, xmax])
-    if labels_ws is None:
-      for w in ws:
-        ax.plot(x, (-w[1]*x - w[0])/w[2])
-    else:
-      for w, name in zip(ws, labels_ws):
-        ax.plot(x, (-w[1]*x - w[0])/w[2], label=name)
-
-  if y is not None or ws is not None:
-    ax.legend()
+  # Muestra título
   if title is not None:
     plt.title(title)
   plt.show()
@@ -123,41 +121,56 @@ def lee_datos(filename, delimiter):
 # (TRAINING Y TEST)  #
 ######################
 
+print("Obtención de datos", end="\n\n")
+
+print("Leyendo datos... ", flush=True, end="")
 digitos_tra_x, digitos_tra_y = lee_datos(DIGITS_TRA, delimiter=",")
 digitos_test_x, digitos_test_y = lee_datos(DIGITS_TEST, delimiter=",")
-
 airfoil_x, airfoil_y = lee_datos(AIRFOIL, delimiter="\t")
+print("Hecho.")
+
+print("Separando training-test... ", flush=True, end="")
 airfoil_tra_x, airfoil_test_x, airfoil_tra_y, airfoil_test_y = train_test_split(
   airfoil_x, airfoil_y, test_size=0.25)
+print("Hecho.")
 
 ##########################
 # VISUALIZACIÓN DE DATOS #
 ##########################
 
+print("\nVisualización de datos", end="\n\n")
 
-def visualiza_datos(X, y, style, title="Visualización"):
-  X_new = PCA(n_components=2).fit_transform(X)
-  scatter(X_new, y, style, title=title)
+print(
+  "La visualización de dígitos lleva más de 1 min. (puede verse en la memoria)."
+)
 
+if pregunta("¿Desea generar esta imagen?", default="n"):
+  print("Creando visualización...", flush=True, end="")
+  X_new = TSNE(n_components=2).fit_transform(digitos_tra_x)
+  print("Hecho.")
 
-visualiza_datos(digitos_tra_x,
-                digitos_tra_y,
-                style="Classification",
-                title="Proyección de dígitos en dos dimensiones")
+  visualizaClasif(X_new,
+                  digitos_tra_y,
+                  title="Proyección de dígitos en dos dimensiones")
+
 espera()
-visualiza_datos(airfoil_tra_x,
-                airfoil_tra_y,
-                style="Regression",
-                title="Proyección airfoil a dos dimensiones")
-espera()
+
+## FIXME: Pairplots para airfoil
 
 ################
 # PREPROCESADO #
 ################
 
+print("\nPreprocesado", end="\n\n")
+
 preprocesado = [("varianza", VarianceThreshold(threshold=0.0)),
                 ("escalado", StandardScaler()),
                 ("PCA", PCA(n_components=0.95))]
+
+preprocesador = Pipeline(preprocesado)
+
+digitos_procesado = preprocesador.fit_transform(digitos_tra_x)
+airfoil_procesado = preprocesador.fit_transform(airfoil_tra_x)
 
 #################
 # CLASIFICACIÓN #
