@@ -12,18 +12,26 @@ from sklearn.pipeline import Pipeline
 from sklearn.feature_selection import VarianceThreshold
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.manifold import TSNE
 from matplotlib import rcParams
 
 # Fijamos la semilla
 np.random.seed(0)
-rcParams['axes.titlepad'] = 20
+rcParams['axes.titlepad'] = 15
 
-## CONSTANTES MODIFICABLES
+###########################
+# CONSTANTES MODIFICABLES #
+###########################
 
 DIGITS_TRA = "datos/optdigits/optdigits.tra"
 DIGITS_TEST = "datos/optdigits/optdigits.tes"
 AIRFOIL = "datos/airfoil/airfoil_self_noise.dat"
+
+##############
+# FUNCIONES  #
+# AUXILIARES #
+##############
 
 
 def espera():
@@ -48,11 +56,12 @@ def pregunta(pregunta, default="s"):
 
 
 def imprime_titulo(titulo):
+  """Imprime el título de una sección."""
   print("\n" + titulo)
   print("-"*len(titulo), end="\n\n")
 
 
-def visualizaClasif(x, y, title=None):
+def visualiza_clasif(x, y, title=None):
   """Representa conjunto de puntos 2D clasificados.
   Argumentos posicionales:
   - x: Coordenadas 2D de los puntos
@@ -71,9 +80,9 @@ def visualizaClasif(x, y, title=None):
   # Pinta etiquetas
   labels = np.unique(y)
   for label in labels:
-    center = np.mean(x[y == label], axis=0)
+    centroid = np.mean(x[y == label], axis=0)
     ax.annotate(int(label),
-                center,
+                centroid,
                 size=14,
                 weight="bold",
                 color="white",
@@ -120,18 +129,16 @@ print("Hecho.")
 
 imprime_titulo("Visualización de datos")
 
-print(
-  "La visualización de dígitos lleva más de 1 min. (puede verse en la memoria)."
-)
+print("La visualización de dígitos lleva más de 1 min. (está en la memoria).")
 
-if pregunta("¿Desea generar esta imagen?", default="n"):
+if pregunta("¿Desea generar esta visualización?", default="n"):
   print("Creando visualización...", flush=True, end="")
   X_new = TSNE(n_components=2).fit_transform(digitos_tra_x)
   print("Hecho.")
 
-  visualizaClasif(X_new,
-                  digitos_tra_y,
-                  title="Proyección de dígitos en dos dimensiones")
+  visualiza_clasif(X_new,
+                   digitos_tra_y,
+                   title="Proyección de dígitos en dos dimensiones")
 
 espera()
 
@@ -150,30 +157,40 @@ preprocesado = [("varianza", VarianceThreshold(threshold=0.0)),
 preprocesador = Pipeline(preprocesado)
 
 
-def muestra_corr(datos, title="Matriz de correlación"):
-  corr_matrix = np.corrcoef(datos.T)
-  plt.matshow(corr_matrix, interpolation="nearest")
-  plt.title(title)
-  plt.colorbar()
+def muestra_preprocesado(datos, procesador, title):
+  """Muestra matriz de correlación para datos antes y después del preprocesado."""
+  fig, axs = plt.subplots(1, 2, figsize=[12.0, 5.8])
+
+  corr_matrix = np.abs(np.corrcoef(datos.T))
+  im = axs[0].matshow(corr_matrix, cmap="plasma")
+  axs[0].title.set_text("Sin preprocesado")
+
+  datos_procesados = procesador.fit_transform(datos)
+  corr_matrix_post = np.abs(np.corrcoef(datos_procesados.T))
+  axs[1].matshow(corr_matrix_post, cmap="plasma")
+  axs[1].title.set_text("Con preprocesado")
+
+  fig.suptitle(title)
+  fig.colorbar(im, ax=axs.ravel().tolist(), shrink=0.6)
   plt.show()
 
 
 print("Matriz de correlación pre y post procesado (dígitos)")
-muestra_corr(VarianceThreshold(threshold=0.0).fit_transform(digitos_tra_x),
-             title="Matriz de correlación (dígitos pre)")
-digitos_procesado = preprocesador.fit_transform(digitos_tra_x)
-muestra_corr(digitos_procesado, title="Matriz de correlación (dígitos post)")
+muestra_preprocesado(
+  VarianceThreshold(threshold=0.0).fit_transform(digitos_tra_x),
+  preprocesador,
+  title="Problema de clasificación: optdigits")
 
 print("Matriz de correlación pre y post procesado (airfoil)")
-muestra_corr(airfoil_tra_x, title="Matriz de correlación (airfoil pre)")
-airfoil_procesado = preprocesador.fit_transform(airfoil_tra_x)
-muestra_corr(airfoil_procesado, title="Matriz de correlación (airfoil post)")
+muestra_preprocesado(airfoil_tra_x,
+                     preprocesador,
+                     title="Problema de regresión: airfoil")
 
 #################
 # CLASIFICACIÓN #
 #################
 
-imprime_titulo("Clasficación")
+imprime_titulo("Clasificación")
 clasificacion = [("logistic",
                   LogisticRegression(penalty='l2',
                                      solver='sag',
@@ -183,6 +200,21 @@ clasificacion = [("logistic",
 clasificador = Pipeline(preprocesado + clasificacion)
 
 clasificador.fit(digitos_tra_x, digitos_tra_y)
-print(clasificador.score(digitos_test_x, digitos_test_y))
+print("Clasificador logístico",
+      clasificador.score(digitos_test_x, digitos_test_y))
 
 ## REGRESIÓN
+
+###############
+# DISCUSIÓN Y #
+# ANÁLISIS    #
+###############
+
+imprime_titulo("Comparación")
+
+random_forest = [("Random Forest", RandomForestClassifier(n_estimators=100))]
+
+clasificador_random_forest = Pipeline(preprocesado + random_forest)
+clasificador_random_forest.fit(digitos_tra_x, digitos_tra_y)
+print("Clasificador Random Forest",
+      clasificador_random_forest.score(digitos_test_x, digitos_test_y))
