@@ -97,6 +97,10 @@ Utilizamos técnicas distintas para cada problema, debido a su diferente natural
 
 ### Clasificación: `optdigits`
 
+**Nota**: La generación de la visualización de este apartado lleva aproximadamente un minuto en mi ordenador, debido a que es una técnica costosa computacionalmente, por lo que he añadido al script del trabajo una pregunta para comprobar si se desea o no hacer la generación de esta imagen.
+
+****
+
 En el caso del dataset de dígitos manuscritos, nos hallamos ante datos en un espacio de alta dimensionalidad, incluso después del preprocesado inicial con el que nos proveen los autores.
 
 Para este tipo de datasets, puede ser útil el uso de una técnica de visualización de variedades.
