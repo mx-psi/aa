@@ -47,6 +47,11 @@ def pregunta(pregunta, default="s"):
       return False
 
 
+def imprime_titulo(titulo):
+  print("\n" + titulo)
+  print("-"*len(titulo), end="\n\n")
+
+
 def visualizaClasif(x, y, title=None):
   """Representa conjunto de puntos 2D clasificados.
   Argumentos posicionales:
@@ -96,7 +101,7 @@ def lee_datos(filename, delimiter):
 # (TRAINING Y TEST)  #
 ######################
 
-print("Obtención de datos", end="\n\n")
+imprime_titulo("Obtención de datos")
 
 print("Leyendo datos... ", flush=True, end="")
 digitos_tra_x, digitos_tra_y = lee_datos(DIGITS_TRA, delimiter=",")
@@ -113,7 +118,7 @@ print("Hecho.")
 # VISUALIZACIÓN DE DATOS #
 ##########################
 
-print("\nVisualización de datos", end="\n\n")
+imprime_titulo("Visualización de datos")
 
 print(
   "La visualización de dígitos lleva más de 1 min. (puede verse en la memoria)."
@@ -136,7 +141,7 @@ espera()
 # PREPROCESADO #
 ################
 
-print("\nPreprocesado", end="\n\n")
+imprime_titulo("Preprocesado")
 
 preprocesado = [("varianza", VarianceThreshold(threshold=0.0)),
                 ("escalado", StandardScaler()),
@@ -168,7 +173,7 @@ muestra_corr(airfoil_procesado, title="Matriz de correlación (airfoil post)")
 # CLASIFICACIÓN #
 #################
 
-print("\nClasficación", end="\n\n")
+imprime_titulo("Clasficación")
 clasificacion = [("logistic",
                   LogisticRegression(penalty='l2',
                                      solver='sag',
