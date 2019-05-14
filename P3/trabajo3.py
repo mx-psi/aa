@@ -13,9 +13,11 @@ from sklearn.feature_selection import VarianceThreshold
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 from sklearn.manifold import TSNE
+from matplotlib import rcParams
 
 # Fijamos la semilla
 np.random.seed(0)
+rcParams['axes.titlepad'] = 20
 
 ## CONSTANTES MODIFICABLES
 
@@ -89,33 +91,6 @@ def lee_datos(filename, delimiter):
   return data[:, :-1], data[:, -1]
 
 
-# ## FIXME: Conveertir en algo usable por el pipeline?
-# def eliminador_corr(data, threshold=0.95):
-#   """Elimina variables que estén muy correlacionadas entre sí.
-#   Argumentos posicionales:
-#   - data: Datos de entrada
-#   Argumentos opcionales:
-#   - threshold: El umbral de correlación a partir del cual eliminar
-#   Devuelve:
-#   - Los datos con una de las columnas correlacionadas eliminada
-#   """
-
-#   corr_matrix = np.corrcoef(data.T)
-#   correlated = np.argwhere(corr_matrix > threshold)
-
-#   idxs = list(range(data.shape[1]))
-#   for i, j in correlated:
-#     if i < j:
-#       try:
-#         idxs.remove(i)
-#       except ValueError:
-#         pass
-
-#   def elimina(datos):
-#     return datos[:, idxs]
-
-#   return elimina
-
 ######################
 # OBTENCIÓN DE DATOS #
 # (TRAINING Y TEST)  #
@@ -169,13 +144,31 @@ preprocesado = [("varianza", VarianceThreshold(threshold=0.0)),
 
 preprocesador = Pipeline(preprocesado)
 
+
+def muestra_corr(datos, title="Matriz de correlación"):
+  corr_matrix = np.corrcoef(datos.T)
+  plt.matshow(corr_matrix, interpolation="nearest")
+  plt.title(title)
+  plt.colorbar()
+  plt.show()
+
+
+print("Matriz de correlación pre y post procesado (dígitos)")
+muestra_corr(VarianceThreshold(threshold=0.0).fit_transform(digitos_tra_x),
+             title="Matriz de correlación (dígitos pre)")
 digitos_procesado = preprocesador.fit_transform(digitos_tra_x)
+muestra_corr(digitos_procesado, title="Matriz de correlación (dígitos post)")
+
+print("Matriz de correlación pre y post procesado (airfoil)")
+muestra_corr(airfoil_tra_x, title="Matriz de correlación (airfoil pre)")
 airfoil_procesado = preprocesador.fit_transform(airfoil_tra_x)
+muestra_corr(airfoil_procesado, title="Matriz de correlación (airfoil post)")
 
 #################
 # CLASIFICACIÓN #
 #################
 
+print("\nClasficación", end="\n\n")
 clasificacion = [("logistic",
                   LogisticRegression(penalty='l2',
                                      solver='sag',
