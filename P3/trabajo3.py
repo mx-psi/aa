@@ -13,10 +13,13 @@ from sklearn.decomposition import PCA
 from sklearn.pipeline import Pipeline
 from sklearn.feature_selection import VarianceThreshold
 from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LogisticRegressionCV
-from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.manifold import TSNE
 from sklearn.metrics import confusion_matrix
+
+from sklearn.linear_model import LogisticRegressionCV, SGDRegressor
+from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
+
+from sklearn.metrics import median_absolute_error
 
 # Fijamos la semilla
 np.random.seed(0)
@@ -74,7 +77,7 @@ class Mensaje():
 
   def __enter__(self):
     """Imprime el mensaje de comienzo."""
-    print(self.mensaje, end="... ", flush=True)
+    print("> " + self.mensaje, end="... ", flush=True)
 
   def __exit__(self, tipo, valor, tb):
     """Imprime que ha finalizado la acción."""
@@ -180,6 +183,7 @@ preprocesador = Pipeline(preprocesado)
 
 def muestra_preprocesado(datos, procesador, title):
   """Muestra matriz de correlación para datos antes y después del preprocesado."""
+  return None  ## FIXME: Borra
   fig, axs = plt.subplots(1, 2, figsize=[12.0, 5.8])
 
   corr_matrix = np.abs(np.corrcoef(datos.T))
@@ -206,6 +210,8 @@ print("Matriz de correlación pre y post procesado (airfoil)")
 muestra_preprocesado(airfoil_tra_x,
                      preprocesador,
                      title="Problema de regresión: airfoil")
+
+espera()
 
 #################
 # CLASIFICACIÓN #
@@ -242,14 +248,12 @@ def muestra_confusion(y_real, y_pred, tipo):
   plt.show()
 
 
-clasificacion = [(
-  "logistic",
-  LogisticRegressionCV(
-    penalty='l2',
-    cv=5,
-    scoring='accuracy',  # FIXME: Cambiar
-    fit_intercept=True,
-    multi_class='multinomial'))]
+clasificacion = [("logistic",
+                  LogisticRegressionCV(penalty='l2',
+                                       cv=5,
+                                       scoring='accuracy',
+                                       fit_intercept=True,
+                                       multi_class='multinomial'))]
 
 clasificador = Pipeline(preprocesado + clasificacion)
 
@@ -263,20 +267,38 @@ muestra_confusion(digits_test_y, y_pred_logistic, "Logístico")
 with Mensaje("Calculando score"):
   score = clasificador.score(digits_test_x, digits_test_y)
 
-print("Clasificador logístico: ", score)
+print("Accuracy clasificador logístico: {:.3f}".format(score))
 
 #############
 # REGRESIÓN #
 #############
+
+imprime_titulo("Regresión")
+
+regresion = [("SGDRegressor",
+              SGDRegressor(loss="squared_loss",
+                           penalty="none",
+                           max_iter=1000,
+                           tol=1e-5,
+                           shuffle=True))]
+
+regresor = Pipeline(preprocesado + regresion)
+
+with Mensaje("Ajustando modelo de regresión"):
+  regresor.fit(airfoil_tra_x, airfoil_tra_y)
+
+with Mensaje("Calculando score"):
+  airfoil_predict_y = regresor.predict(airfoil_test_x)
+  error = median_absolute_error(airfoil_test_y, airfoil_predict_y)
+
+print("MedAE Regresor SGD: {:.3f}".format(error))
 
 ###############
 # DISCUSIÓN Y #
 # ANÁLISIS    #
 ###############
 
-imprime_titulo("Comparación")
-
-print("Comparación de clasificación")
+imprime_titulo("Comparación de clasificación")
 
 randomf_clasif = [("Random Forest", RandomForestClassifier(n_estimators=100))]
 
@@ -291,9 +313,9 @@ muestra_confusion(digits_test_y, y_clasif_randomf, "Random Forest")
 with Mensaje("Calculando score"):
   score = clasificador_randomf.score(digits_test_x, digits_test_y)
 
-print("Score de clasificador Random Forest", score)
+print("Score de clasificador Random Forest: {:.3f}".format(score))
 
-print("Comparación de regresión")
+imprime_titulo("Comparación de regresión")
 
 randomf_regr = [("Random Forest", RandomForestRegressor(n_estimators=100))]
 regresor_randomf = Pipeline(preprocesado + randomf_regr)
@@ -301,4 +323,8 @@ regresor_randomf = Pipeline(preprocesado + randomf_regr)
 with Mensaje("Ajustando modelo de regresión Random Forest"):
   regresor_randomf.fit(airfoil_tra_x, airfoil_tra_y)
 
-y_regr_randomf = regresor_randomf.predict(airfoil_test_x)
+with Mensaje("Calculando error"):
+  y_regr_randomf = regresor_randomf.predict(airfoil_test_x)
+  error = median_absolute_error(airfoil_test_y, y_regr_randomf)
+
+print("MedAE Regresor Random Forest: {:.3f}".format(error))
