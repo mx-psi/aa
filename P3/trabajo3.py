@@ -6,16 +6,17 @@ Nombre Estudiante: Pablo Baeyens Fernández
 import math
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib import rcParams
+
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from sklearn.pipeline import Pipeline
 from sklearn.feature_selection import VarianceThreshold
 from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LogisticRegression
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegressionCV
+from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.manifold import TSNE
 from sklearn.metrics import confusion_matrix
-from matplotlib import rcParams
 
 # Fijamos la semilla
 np.random.seed(0)
@@ -60,6 +61,28 @@ def imprime_titulo(titulo):
   """Imprime el título de una sección."""
   print("\n" + titulo)
   print("-"*len(titulo), end="\n\n")
+
+
+class Mensaje():
+  """Clase que gestiona la impresión de mensajes de progreso.
+  Se usa con un bloque `with` en el que se introducen las
+  órdenes a realizar."""
+
+  def __init__(self, mensaje):
+    """Indica el mensaje a imprimir."""
+    self.mensaje = mensaje
+
+  def __enter__(self):
+    """Imprime el mensaje de comienzo."""
+    print(self.mensaje, end="... ", flush=True)
+
+  def __exit__(self, tipo, valor, tb):
+    """Imprime que ha finalizado la acción."""
+    if tipo is None:
+      print("Hecho.")
+    else:
+      print("Error detectado: {}".format(tipo.__name__))
+      exit(-1)
 
 
 def visualiza_clasif(x, y, title=None):
@@ -113,16 +136,14 @@ def lee_datos(filename, delimiter):
 
 imprime_titulo("Obtención de datos")
 
-print("Leyendo datos... ", flush=True, end="")
-digits_tra_x, digits_tra_y = lee_datos(DIGITS_TRA, delimiter=",")
-digits_test_x, digits_test_y = lee_datos(DIGITS_TEST, delimiter=",")
-airfoil_x, airfoil_y = lee_datos(AIRFOIL, delimiter="\t")
-print("Hecho.")
+with Mensaje("Leyendo datos"):
+  digits_tra_x, digits_tra_y = lee_datos(DIGITS_TRA, delimiter=",")
+  digits_test_x, digits_test_y = lee_datos(DIGITS_TEST, delimiter=",")
+  airfoil_x, airfoil_y = lee_datos(AIRFOIL, delimiter="\t")
 
-print("Separando training-test... ", flush=True, end="")
-airfoil_tra_x, airfoil_test_x, airfoil_tra_y, airfoil_test_y = train_test_split(
-  airfoil_x, airfoil_y, test_size=0.25)
-print("Hecho.")
+with Mensaje("Separando training-test"):
+  airfoil_tra_x, airfoil_test_x, airfoil_tra_y, airfoil_test_y = train_test_split(
+    airfoil_x, airfoil_y, test_size=0.25)
 
 ##########################
 # VISUALIZACIÓN DE DATOS #
@@ -133,9 +154,8 @@ imprime_titulo("Visualización de datos")
 print("La visualización de dígitos lleva más de 1 min. (está en la memoria).")
 
 if pregunta("¿Desea generar esta visualización?", default="n"):
-  print("Creando visualización...", flush=True, end="")
-  X_new = TSNE(n_components=2).fit_transform(digits_tra_x)
-  print("Hecho.")
+  with Mensaje("Creando visualización"):
+    X_new = TSNE(n_components=2).fit_transform(digits_tra_x)
 
   visualiza_clasif(X_new,
                    digits_tra_y,
@@ -196,8 +216,10 @@ imprime_titulo("Clasificación")
 
 def muestra_confusion(y_real, y_pred, tipo):
   """Muestra matriz de confusión.
-Versión simplificada de:
-scikit-learn.org/stable/auto_examples/model_selection/plot_confusion_matrix.html"""
+  Versión simplificada del ejemplo
+  scikit-learn.org/stable/auto_examples/model_selection/plot_confusion_matrix.html
+  """
+  return None  ## FIXME: Borra
   mat = confusion_matrix(y_real, y_pred)
   mat = 100*mat.astype("float64")/mat.sum(axis=1)[:, np.newaxis]
   fig, ax = plt.subplots()
@@ -220,24 +242,32 @@ scikit-learn.org/stable/auto_examples/model_selection/plot_confusion_matrix.html
   plt.show()
 
 
-clasificacion = [("logistic",
-                  LogisticRegression(penalty='l2',
-                                     solver='sag',
-                                     max_iter=400,
-                                     multi_class='multinomial'))]
+clasificacion = [(
+  "logistic",
+  LogisticRegressionCV(
+    penalty='l2',
+    cv=5,
+    scoring='accuracy',  # FIXME: Cambiar
+    fit_intercept=True,
+    multi_class='multinomial'))]
 
 clasificador = Pipeline(preprocesado + clasificacion)
 
-clasificador.fit(digits_tra_x, digits_tra_y)
+with Mensaje("Entrenando modelo de clasificación logístico"):
+  clasificador.fit(digits_tra_x, digits_tra_y)
 
 y_pred_logistic = clasificador.predict(digits_test_x)
 
 muestra_confusion(digits_test_y, y_pred_logistic, "Logístico")
 
-print("Clasificador logístico", clasificador.score(digits_test_x,
-                                                   digits_test_y))
+with Mensaje("Calculando score"):
+  score = clasificador.score(digits_test_x, digits_test_y)
 
-## REGRESIÓN
+print("Clasificador logístico: ", score)
+
+#############
+# REGRESIÓN #
+#############
 
 ###############
 # DISCUSIÓN Y #
@@ -246,13 +276,29 @@ print("Clasificador logístico", clasificador.score(digits_test_x,
 
 imprime_titulo("Comparación")
 
-randomf = [("Random Forest", RandomForestClassifier(n_estimators=100))]
+print("Comparación de clasificación")
 
-clasificador_randomf = Pipeline(preprocesado + randomf)
-clasificador_randomf.fit(digits_tra_x, digits_tra_y)
+randomf_clasif = [("Random Forest", RandomForestClassifier(n_estimators=100))]
 
-y_pred_randomf = clasificador_randomf.predict(digits_test_x)
-muestra_confusion(digits_test_y, y_pred_randomf, "Random Forest")
+clasificador_randomf = Pipeline(preprocesado + randomf_clasif)
 
-print("Clasificador Random Forest",
-      clasificador_randomf.score(digits_test_x, digits_test_y))
+with Mensaje("Ajustando modelo de clasificación Random Forest"):
+  clasificador_randomf.fit(digits_tra_x, digits_tra_y)
+
+y_clasif_randomf = clasificador_randomf.predict(digits_test_x)
+muestra_confusion(digits_test_y, y_clasif_randomf, "Random Forest")
+
+with Mensaje("Calculando score"):
+  score = clasificador_randomf.score(digits_test_x, digits_test_y)
+
+print("Score de clasificador Random Forest", score)
+
+print("Comparación de regresión")
+
+randomf_regr = [("Random Forest", RandomForestRegressor(n_estimators=100))]
+regresor_randomf = Pipeline(preprocesado + randomf_regr)
+
+with Mensaje("Ajustando modelo de regresión Random Forest"):
+  regresor_randomf.fit(airfoil_tra_x, airfoil_tra_y)
+
+y_regr_randomf = regresor_randomf.predict(airfoil_test_x)
