@@ -99,10 +99,10 @@ class mensaje:
     """Imprime que ha finalizado la acción."""
     self.en_ejecucion = False
     if tipo is None:
-      print(self.mensaje + "Hecho.")
+      print(self.mensaje + "hecho.")
     else:
-      print(self.mensaje + "Error detectado: {}".format(tipo.__name__))
-      exit(-1)
+      print("")
+      return False
 
 
 def visualiza_clasif(x, y, title=None):
