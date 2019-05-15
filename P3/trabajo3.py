@@ -23,6 +23,7 @@ from sklearn.linear_model import LogisticRegressionCV, SGDRegressor
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 
 from sklearn.metrics import median_absolute_error
+from sklearn.dummy import DummyClassifier, DummyRegressor
 
 # Fijamos la semilla
 np.random.seed(0)
@@ -237,6 +238,10 @@ espera()
 imprime_titulo("Clasificación")
 
 
+def estima_error_clasif(clasificador, X, y, nombre):
+  print("Accuracy de {}: {:.3f}".format(nombre, clasificador.score(X, y)))
+
+
 def muestra_confusion(y_real, y_pred, tipo):
   """Muestra matriz de confusión.
   Versión simplificada del ejemplo
@@ -280,11 +285,7 @@ with mensaje("Entrenando modelo de clasificación logístico"):
 y_pred_logistic = clasificador.predict(digits_test_x)
 
 muestra_confusion(digits_test_y, y_pred_logistic, "Logístico")
-
-with mensaje("Calculando score"):
-  score = clasificador.score(digits_test_x, digits_test_y)
-
-print("Accuracy clasificador logístico: {:.3f}".format(score))
+estima_error_clasif(clasificador, digits_test_x, digits_test_y, "Logístico")
 
 espera()
 
@@ -292,11 +293,21 @@ espera()
 # REGRESIÓN #
 #############
 
+
+def estima_error_regresion(regresor, X, y, nombre):
+  """Estima diversos errores de un regresor.
+  Debe haberse llamado previamente a la función fit del regresor."""
+  y_pred = regresor.predict(X)
+  print("Errores para regresor {}".format(nombre))
+  print("  MedAE: {:.3f}".format(median_absolute_error(y, y_pred)))
+  print("  R²: {:.3f}".format(regresor.score(X, y)), end="\n\n")
+
+
 imprime_titulo("Regresión")
 
 regresion = [("SGDRegressor",
               SGDRegressor(loss="squared_loss",
-                           penalty="none",
+                           penalty="l2",
                            max_iter=1000,
                            tol=1e-5,
                            shuffle=True))]
@@ -306,11 +317,7 @@ regresor = Pipeline(preprocesado + regresion)
 with mensaje("Ajustando modelo de regresión"):
   regresor.fit(airfoil_tra_x, airfoil_tra_y)
 
-with mensaje("Calculando score"):
-  airfoil_predict_y = regresor.predict(airfoil_test_x)
-  error = median_absolute_error(airfoil_test_y, airfoil_predict_y)
-
-print("MedAE Regresor SGD: {:.3f}".format(error))
+estima_error_regresion(regresor, airfoil_test_x, airfoil_test_y, "SGD")
 
 espera()
 
@@ -331,11 +338,13 @@ with mensaje("Ajustando modelo de clasificación Random Forest"):
 y_clasif_randomf = clasificador_randomf.predict(digits_test_x)
 muestra_confusion(digits_test_y, y_clasif_randomf, "Random Forest")
 
-with mensaje("Calculando score"):
-  score = clasificador_randomf.score(digits_test_x, digits_test_y)
+estima_error_clasif(clasificador_randomf, digits_test_x, digits_test_y,
+                    "RandomForest")
 
-print("Score de clasificador Random Forest: {:.3f}".format(score))
-
+dummy_clasif = DummyClassifier(strategy="stratified")
+dummy_clasif.fit(digits_tra_x, digits_tra_y)
+estima_error_clasif(dummy_clasif, digits_test_x, digits_test_y,
+                    "Estratificado (Dummy)")
 espera()
 
 imprime_titulo("Comparación de regresión")
@@ -346,8 +355,10 @@ regresor_randomf = Pipeline(preprocesado + randomf_regr)
 with mensaje("Ajustando modelo de regresión Random Forest"):
   regresor_randomf.fit(airfoil_tra_x, airfoil_tra_y)
 
-with mensaje("Calculando error"):
-  y_regr_randomf = regresor_randomf.predict(airfoil_test_x)
-  error = median_absolute_error(airfoil_test_y, y_regr_randomf)
+estima_error_regresion(regresor_randomf, airfoil_test_x, airfoil_test_y,
+                       "RandomForest")
 
-print("MedAE Regresor Random Forest: {:.3f}".format(error))
+dummy_regression = DummyRegressor(strategy="mean")
+dummy_regression.fit(airfoil_tra_x, airfoil_tra_y)
+estima_error_regresion(dummy_regression, airfoil_test_x, airfoil_test_y,
+                       "Media (dummy)")
