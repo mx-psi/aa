@@ -4,6 +4,9 @@ TRABAJO 3
 Nombre Estudiante: Pablo Baeyens Fernández
 """
 import math
+import threading
+import time
+
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import rcParams
@@ -66,25 +69,39 @@ def imprime_titulo(titulo):
   print("-"*len(titulo), end="\n\n")
 
 
-class Mensaje():
+class mensaje:
   """Clase que gestiona la impresión de mensajes de progreso.
   Se usa con un bloque `with` en el que se introducen las
-  órdenes a realizar."""
+  órdenes a realizar.
+  El bloque NO debe imprimir a pantalla."""
 
   def __init__(self, mensaje):
     """Indica el mensaje a imprimir."""
-    self.mensaje = mensaje
+    self.mensaje = "> " + mensaje + ": "
+    self.en_ejecucion = False
+    self.delay = 0.3
+
+  def espera(self):
+    i = 0
+    wait = ["   ", ".  ", ".. ", "..."]
+    while self.en_ejecucion:
+      print(self.mensaje + wait[i], end="\r", flush=True)
+      time.sleep(self.delay)
+      i = (i+1) % 4
 
   def __enter__(self):
     """Imprime el mensaje de comienzo."""
-    print("> " + self.mensaje, end="... ", flush=True)
+    print(self.mensaje, end="\r", flush=True)
+    self.en_ejecucion = True
+    threading.Thread(target=self.espera).start()
 
   def __exit__(self, tipo, valor, tb):
     """Imprime que ha finalizado la acción."""
+    self.en_ejecucion = False
     if tipo is None:
-      print("Hecho.")
+      print(self.mensaje + "Hecho.")
     else:
-      print("Error detectado: {}".format(tipo.__name__))
+      print(self.mensaje + "Error detectado: {}".format(tipo.__name__))
       exit(-1)
 
 
@@ -139,12 +156,12 @@ def lee_datos(filename, delimiter):
 
 imprime_titulo("Obtención de datos")
 
-with Mensaje("Leyendo datos"):
+with mensaje("Leyendo datos"):
   digits_tra_x, digits_tra_y = lee_datos(DIGITS_TRA, delimiter=",")
   digits_test_x, digits_test_y = lee_datos(DIGITS_TEST, delimiter=",")
   airfoil_x, airfoil_y = lee_datos(AIRFOIL, delimiter="\t")
 
-with Mensaje("Separando training-test"):
+with mensaje("Separando training-test"):
   airfoil_tra_x, airfoil_test_x, airfoil_tra_y, airfoil_test_y = train_test_split(
     airfoil_x, airfoil_y, test_size=0.25)
 
@@ -157,7 +174,7 @@ imprime_titulo("Visualización de datos")
 print("La visualización de dígitos lleva más de 1 min. (está en la memoria).")
 
 if pregunta("¿Desea generar esta visualización?", default="n"):
-  with Mensaje("Creando visualización"):
+  with mensaje("Creando visualización"):
     X_new = TSNE(n_components=2).fit_transform(digits_tra_x)
 
   visualiza_clasif(X_new,
@@ -257,17 +274,19 @@ clasificacion = [("logistic",
 
 clasificador = Pipeline(preprocesado + clasificacion)
 
-with Mensaje("Entrenando modelo de clasificación logístico"):
+with mensaje("Entrenando modelo de clasificación logístico"):
   clasificador.fit(digits_tra_x, digits_tra_y)
 
 y_pred_logistic = clasificador.predict(digits_test_x)
 
 muestra_confusion(digits_test_y, y_pred_logistic, "Logístico")
 
-with Mensaje("Calculando score"):
+with mensaje("Calculando score"):
   score = clasificador.score(digits_test_x, digits_test_y)
 
 print("Accuracy clasificador logístico: {:.3f}".format(score))
+
+espera()
 
 #############
 # REGRESIÓN #
@@ -284,14 +303,16 @@ regresion = [("SGDRegressor",
 
 regresor = Pipeline(preprocesado + regresion)
 
-with Mensaje("Ajustando modelo de regresión"):
+with mensaje("Ajustando modelo de regresión"):
   regresor.fit(airfoil_tra_x, airfoil_tra_y)
 
-with Mensaje("Calculando score"):
+with mensaje("Calculando score"):
   airfoil_predict_y = regresor.predict(airfoil_test_x)
   error = median_absolute_error(airfoil_test_y, airfoil_predict_y)
 
 print("MedAE Regresor SGD: {:.3f}".format(error))
+
+espera()
 
 ###############
 # DISCUSIÓN Y #
@@ -304,26 +325,28 @@ randomf_clasif = [("Random Forest", RandomForestClassifier(n_estimators=100))]
 
 clasificador_randomf = Pipeline(preprocesado + randomf_clasif)
 
-with Mensaje("Ajustando modelo de clasificación Random Forest"):
+with mensaje("Ajustando modelo de clasificación Random Forest"):
   clasificador_randomf.fit(digits_tra_x, digits_tra_y)
 
 y_clasif_randomf = clasificador_randomf.predict(digits_test_x)
 muestra_confusion(digits_test_y, y_clasif_randomf, "Random Forest")
 
-with Mensaje("Calculando score"):
+with mensaje("Calculando score"):
   score = clasificador_randomf.score(digits_test_x, digits_test_y)
 
 print("Score de clasificador Random Forest: {:.3f}".format(score))
+
+espera()
 
 imprime_titulo("Comparación de regresión")
 
 randomf_regr = [("Random Forest", RandomForestRegressor(n_estimators=100))]
 regresor_randomf = Pipeline(preprocesado + randomf_regr)
 
-with Mensaje("Ajustando modelo de regresión Random Forest"):
+with mensaje("Ajustando modelo de regresión Random Forest"):
   regresor_randomf.fit(airfoil_tra_x, airfoil_tra_y)
 
-with Mensaje("Calculando error"):
+with mensaje("Calculando error"):
   y_regr_randomf = regresor_randomf.predict(airfoil_test_x)
   error = median_absolute_error(airfoil_test_y, y_regr_randomf)
 
