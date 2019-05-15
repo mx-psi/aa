@@ -14,6 +14,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.manifold import TSNE
+from sklearn.metrics import confusion_matrix
 from matplotlib import rcParams
 
 # Fijamos la semilla
@@ -113,8 +114,8 @@ def lee_datos(filename, delimiter):
 imprime_titulo("Obtención de datos")
 
 print("Leyendo datos... ", flush=True, end="")
-digitos_tra_x, digitos_tra_y = lee_datos(DIGITS_TRA, delimiter=",")
-digitos_test_x, digitos_test_y = lee_datos(DIGITS_TEST, delimiter=",")
+digits_tra_x, digits_tra_y = lee_datos(DIGITS_TRA, delimiter=",")
+digits_test_x, digits_test_y = lee_datos(DIGITS_TEST, delimiter=",")
 airfoil_x, airfoil_y = lee_datos(AIRFOIL, delimiter="\t")
 print("Hecho.")
 
@@ -133,11 +134,11 @@ print("La visualización de dígitos lleva más de 1 min. (está en la memoria).
 
 if pregunta("¿Desea generar esta visualización?", default="n"):
   print("Creando visualización...", flush=True, end="")
-  X_new = TSNE(n_components=2).fit_transform(digitos_tra_x)
+  X_new = TSNE(n_components=2).fit_transform(digits_tra_x)
   print("Hecho.")
 
   visualiza_clasif(X_new,
-                   digitos_tra_y,
+                   digits_tra_y,
                    title="Proyección de dígitos en dos dimensiones")
 
 espera()
@@ -177,7 +178,7 @@ def muestra_preprocesado(datos, procesador, title):
 
 print("Matriz de correlación pre y post procesado (dígitos)")
 muestra_preprocesado(
-  VarianceThreshold(threshold=0.0).fit_transform(digitos_tra_x),
+  VarianceThreshold(threshold=0.0).fit_transform(digits_tra_x),
   preprocesador,
   title="Problema de clasificación: optdigits")
 
@@ -191,6 +192,34 @@ muestra_preprocesado(airfoil_tra_x,
 #################
 
 imprime_titulo("Clasificación")
+
+
+def muestra_confusion(y_real, y_pred, tipo):
+  """Muestra matriz de confusión.
+Versión simplificada de:
+scikit-learn.org/stable/auto_examples/model_selection/plot_confusion_matrix.html"""
+  mat = confusion_matrix(y_real, y_pred)
+  mat = 100*mat.astype("float64")/mat.sum(axis=1)[:, np.newaxis]
+  fig, ax = plt.subplots()
+  ax.matshow(mat, cmap="Purples")
+  ax.set(title="Matriz de confusión para predictor {}".format(tipo),
+         xticks=np.arange(10),
+         yticks=np.arange(10),
+         xlabel="Etiqueta real",
+         ylabel="Etiqueta predicha")
+
+  for i in range(10):
+    for j in range(10):
+      ax.text(j,
+              i,
+              "{:.0f}%".format(mat[i, j]),
+              ha="center",
+              va="center",
+              color="black" if mat[i, j] < 50 else "white")
+
+  plt.show()
+
+
 clasificacion = [("logistic",
                   LogisticRegression(penalty='l2',
                                      solver='sag',
@@ -199,9 +228,14 @@ clasificacion = [("logistic",
 
 clasificador = Pipeline(preprocesado + clasificacion)
 
-clasificador.fit(digitos_tra_x, digitos_tra_y)
-print("Clasificador logístico",
-      clasificador.score(digitos_test_x, digitos_test_y))
+clasificador.fit(digits_tra_x, digits_tra_y)
+
+y_pred_logistic = clasificador.predict(digits_test_x)
+
+muestra_confusion(digits_test_y, y_pred_logistic, "Logístico")
+
+print("Clasificador logístico", clasificador.score(digits_test_x,
+                                                   digits_test_y))
 
 ## REGRESIÓN
 
@@ -212,9 +246,13 @@ print("Clasificador logístico",
 
 imprime_titulo("Comparación")
 
-random_forest = [("Random Forest", RandomForestClassifier(n_estimators=100))]
+randomf = [("Random Forest", RandomForestClassifier(n_estimators=100))]
 
-clasificador_random_forest = Pipeline(preprocesado + random_forest)
-clasificador_random_forest.fit(digitos_tra_x, digitos_tra_y)
+clasificador_randomf = Pipeline(preprocesado + randomf)
+clasificador_randomf.fit(digits_tra_x, digits_tra_y)
+
+y_pred_randomf = clasificador_randomf.predict(digits_test_x)
+muestra_confusion(digits_test_y, y_pred_randomf, "Random Forest")
+
 print("Clasificador Random Forest",
-      clasificador_random_forest.score(digitos_test_x, digitos_test_y))
+      clasificador_randomf.score(digits_test_x, digits_test_y))
