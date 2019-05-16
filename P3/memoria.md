@@ -220,13 +220,68 @@ Además, en el caso del dataset de dígitos pasamos a tener un total de 40 varia
 
 # Selección de clase de hipótesis
 
+## Clasificación
+
+En el problema de clasificación tenemos una gran cantidad de variables.
+Esto puede suponer un problema, conocido en la literatura como *curse of dimensionality*, ya que puede dar lugar a sobreajuste o puede hacer que nuestro modelo no converja correctamente. [@TrunkProblemDimensionalitySimple1979]
+
+Para evitar estos problemas he decidido que era más deseable utilizar una clase de hipótesis lineal y no añadir términos de mayor orden, esto es,
+$$\mathcal{H}_1 = \left\{ w_0 + \sum_i w_i x_i \;:\; w_i \in \mathbb{R}\right\}.$$
+
+## Regresión
+
+En el caso de la regresión, al contar con una cantidad reducida de variables, optamos por utilizar una clase de hipótesis que incluya términos cuadráticos para así facilitar el ajuste.
+En general, es posible que la adición de estos parámetros haga que en este espacio de mayor dimensionalidad la regresión sea más precisa.
+
+La clase de hipótesis queda
+$$\mathcal{H}_2 = \left\{ w_0 + \sum_i w_i x_i + \sum_i w'_ix_i^2  \;:\; w_i, w'_i \in \mathbb{R}\right\}.$$
+
+Para llevar a cabo esta transformación definimos una clase que añada los datos al cuadrado en su método `transform`
+(para poder usarlo junto en una Pipeline):
+```python
+class Squaring:
+  """Clase para añadir componentes cuadráticas."""
+
+  def __init__(self):
+    pass # Constructor vacío
+
+  def fit(self, X, y=None):
+    return self # No necesita entrenamiento
+
+  def transform(self, X):
+    return np.hstack((X, X**2))
+```
+
+Procedemos después a hacer un (segundo) escalado para evitar problemas en la regresión, que describimos en la siguiente lista
+```python
+cuadrado = [("Squaring", Squaring()), ("Scaling", StandardScaler())]
+```
+
 # Conjuntos de training, validación y test
+
+Para separar en training y test 
+
+1. En el primer dataset (`optdigits`), optamos por utilizar la separación con la que nos proveen los autores del paquete. No he encontrado razones para modificarla ya que la distribución de los datos por clases (que viene indicada en la descripción del paquete) parece ser aproximadamente igual en ambos conjuntos de datos.
+2. En el segundo dataset (`airfoil`), separamos en training y test usando la función `train_test_split` de `sklearn.model_selection`. Utilizamos un 20% de los datos como test. Para ello llamamos a la función de la siguiente forma
+```python
+airfoil_tra_x, airfoil_test_x, airfoil_tra_y, airfoil_test_y = train_test_split(
+  airfoil_x, airfoil_y, test_size=0.20)
+```
+donde `airfoil_x` e `airfoil_y` son los datos leídos anteriormente.
+
+Usaremos validación cruzada en el caso de clasificación para estimar los parámetros (ver sección [Selección del modelo lineal]). 
+
+No lo hacemos así en el caso de la regresión ya que en el modelo elegido no tiene sentido hacerlo para la estimación de los parámetros.
 
 # Regularización
 
 # Selección del modelo lineal
 
-# Modelo final
+## Clasificación
+
+## Regresión
+
+# Ajuste del modelo final
 
 # Métrica del ajuste
 

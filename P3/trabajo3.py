@@ -164,7 +164,7 @@ with mensaje("Leyendo datos"):
 
 with mensaje("Separando training-test"):
   airfoil_tra_x, airfoil_test_x, airfoil_tra_y, airfoil_test_y = train_test_split(
-    airfoil_x, airfoil_y, test_size=0.25)
+    airfoil_x, airfoil_y, test_size=0.20)
 
 ##########################
 # VISUALIZACIÓN DE DATOS #
@@ -191,20 +191,6 @@ espera()
 ################
 
 imprime_titulo("Preprocesado")
-
-
-class Duplica:
-  """Clase para añadir componentes cuadráticas."""
-
-  def __init__(self):
-    pass
-
-  def fit(self, X, y=None):
-    return self
-
-  def transform(self, X):
-    return np.hstack((X, X**2))
-
 
 preprocesado = [("varianza", VarianceThreshold(threshold=0.0)),
                 ("escalado", StandardScaler()),
@@ -261,7 +247,6 @@ def muestra_confusion(y_real, y_pred, tipo):
   Versión simplificada del ejemplo
   scikit-learn.org/stable/auto_examples/model_selection/plot_confusion_matrix.html
   """
-  return None  ## FIXME: Borra
   mat = confusion_matrix(y_real, y_pred)
   mat = 100*mat.astype("float64")/mat.sum(axis=1)[:, np.newaxis]
   fig, ax = plt.subplots()
@@ -308,6 +293,19 @@ espera()
 #############
 
 
+class Squaring:
+  """Clase para añadir componentes cuadráticas."""
+
+  def __init__(self):
+    pass  # Constructor vacío
+
+  def fit(self, X, y=None):
+    return self  # No necesita entrenamiento
+
+  def transform(self, X):
+    return np.hstack((X, X**2))
+
+
 def estima_error_regresion(regresor, X, y, nombre):
   """Estima diversos errores de un regresor.
   Debe haberse llamado previamente a la función fit del regresor."""
@@ -319,15 +317,14 @@ def estima_error_regresion(regresor, X, y, nombre):
 
 imprime_titulo("Regresión")
 
-duplicado = [("Duplica", Duplica()), ("scaling", StandardScaler())]
+cuadrado = [("Squaring", Squaring()), ("Scaling", StandardScaler())]
 regresion = [("SGDRegressor",
               SGDRegressor(loss="squared_loss",
                            penalty="l2",
                            max_iter=1000,
-                           tol=1e-5,
-                           shuffle=True))]
+                           tol=1e-5))]
 
-regresor = Pipeline(preprocesado + duplicado + regresion)
+regresor = Pipeline(preprocesado + cuadrado + regresion)
 
 with mensaje("Ajustando modelo de regresión"):
   regresor.fit(airfoil_tra_x, airfoil_tra_y)
