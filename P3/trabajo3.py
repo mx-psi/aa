@@ -192,6 +192,20 @@ espera()
 
 imprime_titulo("Preprocesado")
 
+
+class Duplica:
+  """Clase para añadir componentes cuadráticas."""
+
+  def __init__(self):
+    pass
+
+  def fit(self, X, y=None):
+    return self
+
+  def transform(self, X):
+    return np.hstack((X, X**2))
+
+
 preprocesado = [("varianza", VarianceThreshold(threshold=0.0)),
                 ("escalado", StandardScaler()),
                 ("PCA", PCA(n_components=0.95))]
@@ -305,6 +319,7 @@ def estima_error_regresion(regresor, X, y, nombre):
 
 imprime_titulo("Regresión")
 
+duplicado = [("Duplica", Duplica()), ("scaling", StandardScaler())]
 regresion = [("SGDRegressor",
               SGDRegressor(loss="squared_loss",
                            penalty="l2",
@@ -312,7 +327,7 @@ regresion = [("SGDRegressor",
                            tol=1e-5,
                            shuffle=True))]
 
-regresor = Pipeline(preprocesado + regresion)
+regresor = Pipeline(preprocesado + duplicado + regresion)
 
 with mensaje("Ajustando modelo de regresión"):
   regresor.fit(airfoil_tra_x, airfoil_tra_y)
