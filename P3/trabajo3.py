@@ -106,6 +106,45 @@ class mensaje:
       return False
 
 
+def lee_datos(filename, delimiter):
+  """Carga datos desde un fichero de texto.
+  Argumentos posicionales:
+  - filename: Nombre del fichero
+  Argumentos opcionales:
+  - delimiter: El delimitador que separa los datos
+  """
+  data = np.loadtxt(filename, delimiter=delimiter)
+  return data[:, :-1], data[:, -1]
+
+
+def scatter_plots(x, y, title):
+  _, ax = plt.subplots(1, 2, sharey=True)
+  ax.scatter(x, y)
+  plt.title(title)
+  plt.show()
+
+
+######################
+# OBTENCIÓN DE DATOS #
+# (TRAINING Y TEST)  #
+######################
+
+imprime_titulo("Obtención de datos")
+
+with mensaje("Leyendo datos"):
+  digits_tra_x, digits_tra_y = lee_datos(DIGITS_TRA, delimiter=",")
+  digits_test_x, digits_test_y = lee_datos(DIGITS_TEST, delimiter=",")
+  airfoil_x, airfoil_y = lee_datos(AIRFOIL, delimiter="\t")
+
+with mensaje("Separando training-test"):
+  airfoil_tra_x, airfoil_test_x, airfoil_tra_y, airfoil_test_y = train_test_split(
+    airfoil_x, airfoil_y, test_size=0.20)
+
+##########################
+# VISUALIZACIÓN DE DATOS #
+##########################
+
+
 def visualiza_clasif(x, y, title=None):
   """Representa conjunto de puntos 2D clasificados.
   Argumentos posicionales:
@@ -139,37 +178,6 @@ def visualiza_clasif(x, y, title=None):
   plt.show()
 
 
-def lee_datos(filename, delimiter):
-  """Carga datos desde un fichero de texto.
-  Argumentos posicionales:
-  - filename: Nombre del fichero
-  Argumentos opcionales:
-  - delimiter: El delimitador que separa los datos
-  """
-  data = np.loadtxt(filename, delimiter=delimiter)
-  return data[:, :-1], data[:, -1]
-
-
-######################
-# OBTENCIÓN DE DATOS #
-# (TRAINING Y TEST)  #
-######################
-
-imprime_titulo("Obtención de datos")
-
-with mensaje("Leyendo datos"):
-  digits_tra_x, digits_tra_y = lee_datos(DIGITS_TRA, delimiter=",")
-  digits_test_x, digits_test_y = lee_datos(DIGITS_TEST, delimiter=",")
-  airfoil_x, airfoil_y = lee_datos(AIRFOIL, delimiter="\t")
-
-with mensaje("Separando training-test"):
-  airfoil_tra_x, airfoil_test_x, airfoil_tra_y, airfoil_test_y = train_test_split(
-    airfoil_x, airfoil_y, test_size=0.20)
-
-##########################
-# VISUALIZACIÓN DE DATOS #
-##########################
-
 imprime_titulo("Visualización de datos")
 
 print("La visualización de dígitos lleva más de 1 min. (está en la memoria).")
@@ -184,7 +192,53 @@ if pregunta("¿Desea generar esta visualización?", default="n"):
 
 espera()
 
-## FIXME: Pairplots para airfoil
+print("Visualización de airfoil (en ventana aparte)")
+
+airfoil_titles = [
+  "Frecuencia (Hz)", "Ángulo de ataque (º)", "Longitud de ala (m)",
+  "Velocidad de corriente (m/s)", "Espesor de desplazamiento (m)"
+]
+airfoil_indep = "Sonido generado (dB)"
+
+
+def add_common_ylabel(fig, title):
+  """Añade etiqueta y común a plot con varios subplots."""
+  fig.subplots_adjust(wspace=0)
+  fig.add_subplot(111, frameon=False)
+  plt.tick_params(labelcolor='none',
+                  top='off',
+                  bottom='off',
+                  left='off',
+                  right='off')
+  plt.grid(False)
+  plt.ylabel(title)
+
+
+## Primer plot
+fig, axs = plt.subplots(1, 2, sharey=True, figsize=[11.0, 4.8])
+add_common_ylabel(fig, airfoil_indep)
+for i in [0, 1]:
+  axs[i].scatter(airfoil_tra_x[:, i],
+                 airfoil_tra_y,
+                 alpha=0.5,
+                 marker="v",
+                 c="#687aed")
+  axs[i].set(xlabel=airfoil_titles[i])
+plt.title("Dependencia del ruido respecto de distintas variables (1)")
+plt.show()
+
+## Segundo plot
+fig, axs = plt.subplots(1, 3, sharey=True, figsize=[13.0, 4.8])
+add_common_ylabel(fig, airfoil_indep)
+for i in [2, 3, 4]:
+  axs[i - 2].scatter(airfoil_tra_x[:, i],
+                     airfoil_tra_y,
+                     alpha=0.5,
+                     marker="v",
+                     c="#687aed")
+  axs[i - 2].set(xlabel=airfoil_titles[i])
+plt.title("Dependencia del ruido respecto de distintas variables (2)")
+plt.show()
 
 ################
 # PREPROCESADO #
