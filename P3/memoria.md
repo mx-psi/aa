@@ -59,9 +59,9 @@ Los datos de cada problema se guardan en su carpeta dentro de la carpeta `datos`
 en las subcarpetas `optdigits` y `airfoil` para los problemas de clasificación y regresión respectivamente.
 
 He utilizado la versión preprocesada y dividida en training y test en el caso del problema de clasificación de dígitos.
-He conservado los nombres de los ficheros originales en todos los casos.
+He conservado los nombres de los ficheros originales en todos los casos (`optdigits.tra` y `optdigits.tes` para clasificación y `airfoil_self_noise.dat` para regresión).
 
-Para crear fácilmente la carpeta de `datos` con la estructura que he utilizado en un sistema Unix pueden ejecutarse los siguientes comandos, también disponibles en el script adjunto `descarga_datos.sh`:
+Para crear fácilmente la carpeta de `datos` con la estructura que he utilizado en un sistema Unix pueden ejecutarse los siguientes comandos:
 
 ```sh
 mkdir -p datos/optdigits
@@ -135,6 +135,45 @@ Debido a las distorsiones que se sufren necesariamente al reducir la dimensional
 No obstante, podemos ver que los conjuntos de imágenes que parecen más difíciles de diferenciar son los correspondientes a los dígitos 1,8 y 9, y que los dígitos 9 parecen agruparse en dos estilos diferentes.
 
 ### Regresión: `airfoil`
+
+En el caso de regresión, dado el reducido número de variables podemos proceder a observar la relación de la variable que queremos predecir (el ruido producido) con cada una de las variables de entrada de las que disponemos.
+
+Para producir las imágenes hacemos un *scatter plot* de cada variable con la variable a predecir.
+Por motivos de espacio lo hacemos en dos plots separados.
+Discutimos brevemente el código de uno de ellos (ambos son idénticos salvo por el tamaño).
+
+`airfoil_titles` es una lista de nombres de las variables de entrada y `airfoil_indep` el nombre de la variable de salida.
+Hacemos un plot con varios subplots que comparten el eje y, indicando su etiqueta.
+Además, usamos la función `add_common_ylabel` para añadir el eje de las y compartido:
+
+```python
+fig, axs = plt.subplots(1, 2, sharey=True, figsize=[11.0, 4.8])
+add_common_ylabel(fig, airfoil_indep)
+for i in [0, 1]:
+  axs[i].scatter(airfoil_tra_x[:, i],
+                 airfoil_tra_y,
+                 alpha=0.5,
+                 marker="v",
+                 c="#687aed")
+  axs[i].set(xlabel=airfoil_titles[i])
+plt.title("Dependencia del ruido respecto de distintas variables (1)")
+plt.show()
+```
+
+El resultado puede verse en las siguientes imágenes.
+
+![](img/airfoil_1.pdf)
+![](img/airfoil_2.pdf)
+
+Como podemos ver en las imágenes, en general con respecto de una sola variable el ruido tiene una gran variabilidad incluso para un valor fijado de la variable de entrada.
+Podemos apreciar una débil relación negativa entre la frecuencia y el espesor de desplazamiento y el sonido generado.
+
+Además, podemos apreciar que las variables de longitud de ala y velocidad de corriente toman sólo 6 y 4 valores respectivamente.
+
+Como conclusiones podemos deducir que algunas de las variables aportan mucha menos información que el resto cuando se presentan por separado y que los datos tienen potencialmente mucha variabilidad incluso cuando fijamos algunas de las variables.
+
+\newpage
+
 
 # Preprocesado de los datos
 

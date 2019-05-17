@@ -117,13 +117,6 @@ def lee_datos(filename, delimiter):
   return data[:, :-1], data[:, -1]
 
 
-def scatter_plots(x, y, title):
-  _, ax = plt.subplots(1, 2, sharey=True)
-  ax.scatter(x, y)
-  plt.title(title)
-  plt.show()
-
-
 ######################
 # OBTENCIÓN DE DATOS #
 # (TRAINING Y TEST)  #
@@ -202,7 +195,8 @@ airfoil_indep = "Sonido generado (dB)"
 
 
 def add_common_ylabel(fig, title):
-  """Añade etiqueta y común a plot con varios subplots."""
+  """Añade etiqueta y común a plot con varios subplots.
+  Adaptado de: stackoverflow.com/a/36542971/3414720"""
   fig.subplots_adjust(wspace=0)
   fig.add_subplot(111, frameon=False)
   plt.tick_params(labelcolor='none',
