@@ -205,10 +205,11 @@ En el caso del dataset de dígitos tenemos una gran cantidad de dimensiones y po
 
 Además, como observamos en la sección [Resultado del preprocesamiento], en ambos datasets hay variables con una correlación alta entre sí. Esto puede dar problemas a la hora de la regresión y otros métodos estadísticos, por lo que es deseable reducir esta correlación [@FarrarMulticollinearityRegressionAnalysis1967].
 
-Debido a estos dos objetivos, he decidio aplicar la técnica de análisis de componentes principales sobre ambos conjuntos de datos.
+Debido a estos dos objetivos, he decidido aplicar la técnica de análisis de componentes principales sobre ambos conjuntos de datos.
 En concreto, tras hacer la transformación PCA, he conservado variables que expliquen al menos un 95% de la varianza y he descartado el resto.
 
 Para actuar sobre las correlaciones he estandarizado todas las variables (esto es, he hecho que su media sea cero y su varianza 1) usando el objeto `StandardScaler` de `sklearn.preprocessing`.
+En el caso de la regresión esto es además necesario porque las unidades de medida utilizada en cada variable son diferentes y no son comparables.
 
 Para realizar esta transformación utilizamos el objeto `PCA` de `sklearn.decomposition`,
 con el parámetro `n_components` fijado a `0.95`.
@@ -275,25 +276,17 @@ En general, es posible que la adición de estos parámetros haga que en este esp
 La clase de hipótesis queda
 $$\mathcal{H}_2 = \left\{ w_0 + \sum_i w_i x_i + \sum_i w'_ix_i^2  \;:\; w_i, w'_i \in \mathbb{R}\right\}.$$
 
-Para llevar a cabo esta transformación definimos una clase que añada los datos al cuadrado en su método `transform`
-(para poder usarlo junto en una Pipeline):
+Para llevar a cabo esta transformación utilizamos la clase `FunctionTransformer` del módulo `sklearn.preprocessing` para aplicar una función a los datos. En primer lugar definimos la función a aplicar:
 ```python
-class Squaring:
-  """Clase para añadir componentes cuadráticas."""
-
-  def __init__(self):
-    pass # Constructor vacío
-
-  def fit(self, X, y=None):
-    return self # No necesita entrenamiento
-
-  def transform(self, X):
-    return np.hstack((X, X**2))
+def square(x):
+  """Añade variables al cuadrado."""
+  return np.hstack((x,x**2))
 ```
 
-Procedemos después a hacer un (segundo) escalado para evitar problemas en la regresión, que describimos en la siguiente lista
+Y procedemos después a hacer un (segundo) escalado para evitar problemas en la regresión.
+El conjunto de acciones queda descrito en la siguiente lista:
 ```python
-cuadrado = [("Squaring", Squaring()), ("Scaling", StandardScaler())]
+cuadrado = [("Squaring", FunctionTransformer(func=square)), ("Scaling", StandardScaler())]
 ```
 
 # Conjuntos de training, validación y test
@@ -324,9 +317,24 @@ No lo hacemos así en el caso de la regresión ya que en el modelo elegido no ti
 
 # Métrica del ajuste
 
+## Clasificación
+## Regresión
+
+En el caso de la regresión he utilizado el MSE.
+
+Para mostrar el error obtenido mostramos el RMSE (*Root Mean Squared Error*), es decir, la raíz del MSE, para que las unidades de medida coincidan con las de la variable a predecir (en este caso decibelios).
+
 # Estimación del error real
 
 # Discusión
+
+Para la discusión he comparado cada modelo con dos modelos alternativos: uno que realiza un ajuste no lineal (Random Forest) y un estimador «dummy» que no realiza realmente ningún ajuste.
+
+## Clasificación
+
+Para la clasificación
+
+## Regresión
 
 \newpage
 

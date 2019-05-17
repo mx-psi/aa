@@ -11,7 +11,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import rcParams
 
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, FunctionTransformer
 from sklearn.decomposition import PCA
 from sklearn.pipeline import Pipeline
 from sklearn.feature_selection import VarianceThreshold
@@ -22,7 +22,7 @@ from sklearn.metrics import confusion_matrix
 from sklearn.linear_model import LogisticRegressionCV, SGDRegressor
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 
-from sklearn.metrics import median_absolute_error
+from sklearn.metrics import mean_squared_error
 from sklearn.dummy import DummyClassifier, DummyRegressor
 
 # Fijamos la semilla
@@ -341,31 +341,25 @@ espera()
 #############
 
 
-class Squaring:
-  """Clase para añadir componentes cuadráticas."""
-
-  def __init__(self):
-    pass  # Constructor vacío
-
-  def fit(self, X, y=None):
-    return self  # No necesita entrenamiento
-
-  def transform(self, X):
-    return np.hstack((X, X**2))
-
-
 def estima_error_regresion(regresor, X, y, nombre):
   """Estima diversos errores de un regresor.
   Debe haberse llamado previamente a la función fit del regresor."""
   y_pred = regresor.predict(X)
   print("Errores para regresor {}".format(nombre))
-  print("  MedAE: {:.3f}".format(median_absolute_error(y, y_pred)))
+  print("  RMSE: {:.3f}".format(math.sqrt(mean_squared_error(y, y_pred))))
   print("  R²: {:.3f}".format(regresor.score(X, y)), end="\n\n")
 
 
 imprime_titulo("Regresión")
 
-cuadrado = [("Squaring", Squaring()), ("Scaling", StandardScaler())]
+
+def square(x):
+  """Añade variables al cuadrado."""
+  return np.hstack((x, x**2))
+
+
+cuadrado = [("Squaring", FunctionTransformer(func=square)),
+            ("Scaling", StandardScaler())]
 regresion = [("SGDRegressor",
               SGDRegressor(loss="squared_loss",
                            penalty="l2",
