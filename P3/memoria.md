@@ -307,6 +307,18 @@ No lo hacemos así en el caso de la regresión ya que en el modelo elegido no ti
 
 # Regularización
 
+He utilizado estrategias de regularización para ambos problemas.
+Considero que el uso de la regularización es esencial en el campo del aprendizaje automático en la gran mayoría de problemas, ya que la posibilidad de sobreajuste es muy elevada cuando tratamos con tantas variables de entrada.
+
+El término de regularización controla así la complejidad del modelo resultante, limitando parcialmente este posible sobreajuste en función de cómo de grande sea la constante que acompaña a este término.
+
+Tanto en la regularización del problema de clasificación como en el de regresión he utilizado una regularización de tipo $l_2$, esto es, que añade como término a la función de error un sumando de la forma $\alpha \lVert w\rVert_2^2$, para cierto $\alpha \in \mathbb{R}^+$.
+
+El uso de la regularización de norma 2 penaliza con más fuerza los valores muy grandes en comparación con el uso de la norma 1, lo que considero que es preferible a la hora de limitar la complejidad del modelo.
+
+La elección del parámetro $\alpha$, que en términos prácticos regula el efecto de la regularización difiere en cada caso y se discute en la sección correspondiente de [Selección del modelo lineal].
+
+
 # Selección del modelo lineal
 
 ## Clasificación
