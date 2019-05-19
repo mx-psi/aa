@@ -318,7 +318,8 @@ def muestra_confusion(y_real, y_pred, tipo):
 
 
 clasificacion = [("logistic",
-                  LogisticRegressionCV(penalty='l2',
+                  LogisticRegressionCV(Cs=4,
+                                       penalty='l2',
                                        cv=5,
                                        scoring='accuracy',
                                        fit_intercept=True,

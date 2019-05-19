@@ -321,7 +321,32 @@ La elección del parámetro $\alpha$, que en términos prácticos regula el efec
 
 # Selección del modelo lineal
 
+En esta sección especifico qué modelo lineal se ha escogido para cada problema.
+
 ## Clasificación
+
+En el caso del problema de clasificación, me he decantado por un modelo logístico.
+El modelo logístico para problemas de clasificación multiclase admite dos posibles estrategias: 
+
+- *One vs. rest*, que resuelve un problema de clasificación binaria para cada clase vs. el resto de clases y
+- *Multinomial*, que resuelve el problema de clasificación de todas las clases al mismo tiempo, utilizando una función de pérdida softmax.
+
+Me he decantado por utilizar el segundo método, esto es, la clasificación multinomial que reduce la pérdida de todas las clases al mismo tiempo. 
+He añadido, tal y como se menciona en la sección de [regularización], un término de regularización `l2` para evitar el sobreajuste.
+
+Dado que tenemos una cantidad grande de datos, para determinar la constante que acompaña el término regularizador, he utilizado un sistema de validación cruzada con una partición en 5 subconjuntos de datos (de forma que se respete la proporción de clases). El sistema compara el rendimiento para 4 parámetros de regularización entre $10^{-4}$ y $10^4$.
+
+Además, especifico de forma explícita la métrica de error a utilizar y que el modelo lineal incluya una constante adicional. El proceso de clasificación queda por tanto indicado en la siguiente lista de tareas:
+
+```python
+clasificacion = [("logistic",
+                  LogisticRegressionCV(Cs=4,
+                                       penalty='l2',
+                                       cv=5,
+                                       scoring='accuracy',
+                                       fit_intercept=True,
+                                       multi_class='multinomial'))]
+```
 
 ## Regresión
 
