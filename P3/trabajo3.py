@@ -129,7 +129,7 @@ with mensaje("Leyendo datos"):
   digits_test_x, digits_test_y = lee_datos(DIGITS_TEST, delimiter=",")
   airfoil_x, airfoil_y = lee_datos(AIRFOIL, delimiter="\t")
 
-with mensaje("Separando training-test"):
+with mensaje("Separando training-test de 'airfoil'"):
   airfoil_tra_x, airfoil_test_x, airfoil_tra_y, airfoil_test_y = train_test_split(
     airfoil_x, airfoil_y, test_size=0.20)
 
@@ -249,7 +249,6 @@ preprocesador = Pipeline(preprocesado)
 
 def muestra_preprocesado(datos, procesador, title):
   """Muestra matriz de correlación para datos antes y después del preprocesado."""
-  return None  ## FIXME: Borra
   fig, axs = plt.subplots(1, 2, figsize=[12.0, 5.8])
 
   corr_matrix = np.abs(np.corrcoef(datos.T))
@@ -286,8 +285,11 @@ espera()
 imprime_titulo("Clasificación")
 
 
-def estima_error_clasif(clasificador, X, y, nombre):
-  print("Accuracy de {}: {:.3f}".format(nombre, clasificador.score(X, y)))
+def estima_error_clasif(clasificador, X_tra, y_tra, X_test, y_test, nombre):
+  print("Error de {} en training: {:.3f}".format(
+    nombre, 1 - clasificador.score(X_tra, y_tra)))
+  print("Error de {} en test: {:.3f}".format(
+    nombre, 1 - clasificador.score(X_test, y_test)))
 
 
 def muestra_confusion(y_real, y_pred, tipo):
@@ -333,7 +335,8 @@ with mensaje("Entrenando modelo de clasificación logístico"):
 y_pred_logistic = clasificador.predict(digits_test_x)
 
 muestra_confusion(digits_test_y, y_pred_logistic, "Logístico")
-estima_error_clasif(clasificador, digits_test_x, digits_test_y, "Logístico")
+estima_error_clasif(clasificador, digits_tra_x, digits_tra_y, digits_test_x,
+                    digits_test_y, "Logístico")
 
 espera()
 
@@ -342,13 +345,16 @@ espera()
 #############
 
 
-def estima_error_regresion(regresor, X, y, nombre):
+def estima_error_regresion(regresor, X_tra, y_tra, X_tes, y_tes, nombre):
   """Estima diversos errores de un regresor.
   Debe haberse llamado previamente a la función fit del regresor."""
-  y_pred = regresor.predict(X)
   print("Errores para regresor {}".format(nombre))
-  print("  RMSE: {:.3f}".format(math.sqrt(mean_squared_error(y, y_pred))))
-  print("  R²: {:.3f}".format(regresor.score(X, y)), end="\n\n")
+  for datos, X, y in [("training", X_tra, y_tra), ("test", X_tes, y_tes)]:
+    y_pred = regresor.predict(X)
+    print("  RMSE ({}): {:.3f}".format(
+      datos, math.sqrt(mean_squared_error(y, y_pred))))
+    print("  R²   ({}): {:.3f}".format(datos, regresor.score(X, y)),
+          end="\n\n")
 
 
 imprime_titulo("Regresión")
@@ -372,7 +378,8 @@ regresor = Pipeline(preprocesado + cuadrado + regresion)
 with mensaje("Ajustando modelo de regresión"):
   regresor.fit(airfoil_tra_x, airfoil_tra_y)
 
-estima_error_regresion(regresor, airfoil_test_x, airfoil_test_y, "SGD")
+estima_error_regresion(regresor, airfoil_tra_x, airfoil_tra_y, airfoil_test_x,
+                       airfoil_test_y, "SGD")
 
 espera()
 
@@ -393,13 +400,13 @@ with mensaje("Ajustando modelo de clasificación Random Forest"):
 y_clasif_randomf = clasificador_randomf.predict(digits_test_x)
 muestra_confusion(digits_test_y, y_clasif_randomf, "Random Forest")
 
-estima_error_clasif(clasificador_randomf, digits_test_x, digits_test_y,
-                    "RandomForest")
+estima_error_clasif(clasificador_randomf, digits_tra_x, digits_tra_y,
+                    digits_test_x, digits_test_y, "RandomForest")
 
 dummy_clasif = DummyClassifier(strategy="stratified")
 dummy_clasif.fit(digits_tra_x, digits_tra_y)
-estima_error_clasif(dummy_clasif, digits_test_x, digits_test_y,
-                    "Estratificado (Dummy)")
+estima_error_clasif(dummy_clasif, digits_tra_x, digits_tra_y, digits_test_x,
+                    digits_test_y, "Estratificado (Dummy)")
 espera()
 
 imprime_titulo("Comparación de regresión")
@@ -410,10 +417,10 @@ regresor_randomf = Pipeline(preprocesado + randomf_regr)
 with mensaje("Ajustando modelo de regresión Random Forest"):
   regresor_randomf.fit(airfoil_tra_x, airfoil_tra_y)
 
-estima_error_regresion(regresor_randomf, airfoil_test_x, airfoil_test_y,
-                       "RandomForest")
+estima_error_regresion(regresor_randomf, airfoil_tra_x, airfoil_tra_y,
+                       airfoil_test_x, airfoil_test_y, "RandomForest")
 
 dummy_regression = DummyRegressor(strategy="mean")
 dummy_regression.fit(airfoil_tra_x, airfoil_tra_y)
-estima_error_regresion(dummy_regression, airfoil_test_x, airfoil_test_y,
-                       "Media (dummy)")
+estima_error_regresion(dummy_regression, airfoil_tra_x, airfoil_tra_y,
+                       airfoil_test_x, airfoil_test_y, "Media (dummy)")

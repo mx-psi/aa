@@ -41,7 +41,7 @@ El objetivo es intentar predecir el ruido que provoca un perfil de ala en un tun
 Los datos de entrada son
 
 1. la frecuencia en hertzios,
-2. el ángulo de ataque en grados,
+2. el ángulo de ataaque en grados,
 3. longitud del ala (*chord length*) en metros,
 4. velocidad de corriente en metros por segundo y
 5. espesor de desplazamiento (*suction side displacement thickness*) en metros.
@@ -416,7 +416,7 @@ $$P[y = k | \mathbf{x}] = \frac{\exp(\mathbf{w}_k^T\mathbf{x})}{\sum_{j=0}^9 \ex
 
 Escogemos entonces vectores $\mathbf{w}_k$ que maximicen por tanto la verosimilitud de estos parámetros en función de la muestra de entrenamiento.
 
-Esta métrica tiene por tanto una justificación teórica robusta, ya que lo que hacemos es aproximar un estimador máximo-verosímil.
+Esta métrica tiene por tanto una justificación teórica robusta, ya que lo que hacemos es aproximar un estimador máximo-verosimil.
 
 A esta log-verosimilitud se le añade también los términos de regularización de la forma $\alpha \lVert \mathbf{w}_k\rVert_2^2$ para el $\alpha$ fijado por el proceso de validación cruzada.
 
