@@ -33,9 +33,9 @@ rcParams['axes.titlepad'] = 15
 # CONSTANTES MODIFICABLES #
 ###########################
 
-DIGITS_TRA = "datos/optdigits/optdigits.tra"
-DIGITS_TEST = "datos/optdigits/optdigits.tes"
-AIRFOIL = "datos/airfoil/airfoil_self_noise.dat"
+DIGITS_TRA = "datos/optdigits.tra"
+DIGITS_TEST = "datos/optdigits.tes"
+AIRFOIL = "datos/airfoil_self_noise.dat"
 
 ##############
 # FUNCIONES  #

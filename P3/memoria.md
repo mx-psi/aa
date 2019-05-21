@@ -63,18 +63,18 @@ He conservado los nombres de los ficheros originales en todos los casos (`optdig
 Para crear fácilmente la carpeta de `datos` con la estructura que he utilizado en un sistema Unix pueden ejecutarse los siguientes comandos:
 
 ```sh
-mkdir -p datos/optdigits
+mkdir -p datos
 wget \
  archive.ics.uci.edu/ml/machine-learning-databases/optdigits/optdigits.tra \
- -O datos/optdigits/optdigits.tra
+ -O datos/optdigits.tra
 wget \
  archive.ics.uci.edu/ml/machine-learning-databases/optdigits/optdigits.tes \
- -O datos/optdigits/optdigits.tes
+ -O datos/optdigits.tes
 
 mkdir -p datos/airfoil
 wget \
  archive.ics.uci.edu/ml/machine-learning-databases/00291/airfoil_self_noise.dat \
- -O datos/airfoil/airfoil_self_noise.dat
+ -O datos/airfoil_self_noise.dat
 ```
 
 Alternativamente, pueden modificarse las constantes `DIGITS_TRA`, `DIGITS_TEST` y `AIRFOIL` que aparecen al comienzo del archivo para modifcar el lugar del que se obtienen los datos.
