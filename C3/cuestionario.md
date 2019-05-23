@@ -11,6 +11,8 @@ header-includes:
 - \usepackage{stmaryrd}
 - \usepackage{etoolbox}
 - \AtBeginEnvironment{quote}{\itshape}
+- \usepackage{algorithm}
+- \usepackage{algpseudocode}
 ---
 
 \newpage
@@ -21,17 +23,52 @@ header-includes:
 > modelo de aprendizaje?. Diga si o no con argumentos. En caso afirmativo compárela con
 > validación cruzada.
 
+*Bagging* es una técnica para reducir la varianza de un modelo utilizando muchos conjuntos de datos de entrenamiento distintos generados con reemplazamiento del conjunto de datos original y promediando sus resultados (o tomando el voto mayoritario en el caso de clasificación).
+
+Utiliza la técnica de **bootstraping**, que puede considerarse una ténica para estimar el error de predicción
+
 # Pregunta 2
 
 >  Considere que dispone de un conjunto de datos linealmente separable. Recuerde que una
 > vez establecido un orden sobre los datos, el algoritmo perceptron encuentra un hiperplano
 > separador interando sobre los datos y adaptando los pesos de acuerdo al algoritmo
-TODO
+
+\begin{algorithm}
+\caption{Perceptron}
+\begin{algorithmic}[1]
+\State \textbf{Entradas:} $(\mathbf{x}_i,y_i), i = 1,\dots,n, \mathbf{w} = 0, k = 0$
+\Repeat
+\State $k \gets (k+1) \mod n$
+\If{$\operatorname{sign}(y_i) \neq \operatorname{sign}(\mathbf{w}^T \mathbf{x}_i)$}
+\State $\mathbf{w} \gets \mathbf{w} + y_i\mathbf{x}_i$
+\EndIf
+\Until{todos los puntos bien clasificados}
+\end{algorithmic}
+\end{algorithm}
+
 > Modificar este pseudo-código para adaptarlo a un algoritmo simple de SVM, considerando
 > que en cada iteración adaptamos los pesos de acuerdo al caso peor clasificado de toda la
 > muestra. Justificar adecuadamente/matematicamente el resultado, mostrando que al final
 > del entrenamiento solo estaremos adaptando los vectores soporte.
 
+En el caso separable
+
+La modificación está en la condición para la actualización.
+
+\begin{algorithm}
+\caption{SVM}
+\begin{algorithmic}[1]
+\State \textbf{Entradas:} $(\mathbf{x}_i,y_i), i = 1,\dots,n, \mathbf{w} = 0, k = 0$
+\Repeat
+\State $k \gets (k+1) \mod n$
+\If{$y_i (\mathbf{w}^T \mathbf{x}_i) < 1$}
+\State $\mathbf{w} \gets \mathbf{w} + y_i\mathbf{x}_i$
+\EndIf
+\Until{todos los puntos bien clasificados}
+\end{algorithmic}
+\end{algorithm}
+
+\newpage
 
 # Pregunta 3
 
@@ -45,7 +82,17 @@ TODO
 
 ## a)  Dibujar los puntos y construir por inspección el vector de pesos para el hiperplano óptimo y el margen óptimo.
 
+La siguiente figura uestra en azul los puntos de la clase 1 y en verde los puntos de la clase 2, junto con el margen óptimo en coloreado en amarillo:
+![Representación de los puntos y el modelo SVM](ej2.png)
+
+Como vemos el hiperplano clasifica correctamente los puntos en función del lado al que quedan y además su distancia mínima a un punto es la máxima posible (representada por el margen marcado en amarillo).
+
 ## b) ¿Cuáles son los vectores soporte?
+
+Los vectores soporte son aquellos que definen el hiperplano, esto es, aquellos que tienen la mínima distancia con el hiperplano.
+
+Como muestra el diagrama, los vectores soporte del hiperplano son los puntos $(0,1),(1,0),(1,1),(2,2)$.
+
 ## c)  Construir la solución en el espacio dual. Comparar la solución con la del apartado (a)
 
 # Pregunta 4
